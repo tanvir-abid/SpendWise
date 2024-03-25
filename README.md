@@ -7,9 +7,7 @@ SpendWise is an expense management application designed to empower users in trac
 - **Expense Tracking:** Record and categorize expenses easily.
 - **Budget Management:** Set personalized budgets for different categories.
 - **Financial Insights:** Gain valuable insights through interactive charts and reports.
-- **Goal Setting:** Define savings goals and monitor progress.
 - **Customization:** Tailor SpendWise to your specific needs.
-- **Security:** Keep your financial data safe with robust encryption.
 
 ## Getting Started
 
@@ -30,9 +28,9 @@ We value your feedback! If you have any suggestions, feature requests, or bug re
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/yourusername/SpendWise/blob/main/LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/tabvir-abid/SpendWise/blob/main/LICENSE) file for details.
 
 ## Contact
 
-For inquiries or support, contact us at contact@spendwise.com. Visit our website at [www.spendwise.com](https://www.spendwise.com) for more information.
+For inquiries or support, contact us at tanviraht0@gmail.com. Visit our website at [https://tanvir-abid.github.io/Portfolio/]for more information.
 
