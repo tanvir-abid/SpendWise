@@ -16,25 +16,13 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// signOut(auth).then(() => {
-//   console.log('sign out !!')
-// }).catch((error) => {
-  
-// });
-
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    // User is signed in, see docs for a list of available properties
-    // https://firebase.google.com/docs/reference/js/auth.user
-    const uid = user.uid;
-    console.log(uid);
-    createPrimaryElements(uid);
+    createPrimaryElements(user.uid,user.email);
   } else {
-    console.log('sign out !!');
     createCredentialSection();
   }
 });
-
 
 //=====================================//
 function createCredentialSection(){
@@ -94,8 +82,7 @@ function createCredentialSection(){
             .then((userCredential) => {
               // Signed in 
               const user = userCredential.user;
-              console.log(user.uid);
-              createModal("Welcome Back !!",`<h3>Hi, ${emailInput.value}</h3><p>Welcome back! You have successfully logged in. Enjoy your browsing experience!</p>`)
+              // createModal("Welcome Back !!",`<h3>Hi, ${emailInput.value}</h3><p>Welcome back! You have successfully logged in. Enjoy your browsing experience!</p>`)
             })
             .catch((error) => {
               const errorCode = error.code;
@@ -147,7 +134,6 @@ function createCredentialSection(){
             .then((userCredential) => {
               // Signed up
               const user = userCredential.user;
-              console.log(user.uid);
               // Get current year and month
               const currentDate = new Date();
               const currentYear = currentDate.getFullYear().toString();
@@ -162,7 +148,7 @@ function createCredentialSection(){
               };
               try{
                 setDoc(yearMonthRef, yearMonthData),
-                console.log("Empty paths created and user registered successfully!");
+                // console.log("Empty paths created and user registered successfully!");
                 createModal("Congratulations !!", "Thank you for registering! Your account has been successfully created. Welcome aboard");
               }catch (error) {
                 console.error("Error adding document: ", error);
@@ -221,27 +207,14 @@ function showTab(selectedTab, selectedForm) {
 
 
 //=====================================//
-async function createPrimaryElements(userID) {
+async function createPrimaryElements(userID,userEmail) {
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear().toString();
   const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
 
-  // const docRef = doc(db, "user", "test", currentYear, currentMonth);
-  // try {
-  //   const docSnapshot = await getDoc(docRef);
-  //   if (docSnapshot.exists()) {
-  //     console.log("Location data is available for", currentMonth, currentYear);
-  //   } else {
-  //     console.log("Location data is not available for", currentMonth, currentYear);
-  //   }
-  // } catch (error) {
-  //   console.error("Error checking for location data:", error);
-  // }
-
   // Create nav-container div
   const navContainer = document.createElement('div');
   navContainer.setAttribute('id', 'nav-container');
-
 
   // Create main-container div
   const mainContainer = document.createElement('div');
@@ -276,18 +249,29 @@ async function createPrimaryElements(userID) {
           liElement.classList.add('active');
 
           if(item.name == 'Home'){
+            displayLoadingAnimation();
             const docSnap = await getDoc(doc(db, "user", userID, currentYear, currentMonth));
 
             if (docSnap.exists()) {
-              const homeSection = createHomeSection(docSnap.data());
+              const homeSection = createHomeSection(docSnap.data(),userEmail);
               mainContainer.innerHTML = "";
               mainContainer.appendChild(homeSection);
             } else {
-              // docSnap.data() will be undefined in this case
-              createModal("Warning !!","No such document!");
-            }
+              const newMonthContent = {
+                  newMonth: true,
+                  user: userID,
+                  message: `
+                      <h2>Thank you for staying with us.</h2>
+                      <p>Your commitment to our platform is greatly appreciated.</p>
+                      <p>We invite you to start a new month. Are you ready to begin?</p>
+                  `
+              };
             
+              createModal("Congratulations !!",newMonthContent);
+            }
+            removeLoadingAnimation();
           }else if(item.name == 'Wallet'){
+            displayLoadingAnimation();
             let bankData = [];
             const querySnapshot = await getDocs(collection(db, "user", userID,"bank"));
             querySnapshot.forEach((doc) => {
@@ -296,6 +280,7 @@ async function createPrimaryElements(userID) {
             const walletSection = createWalletSection(userID,bankData);
             mainContainer.innerHTML = "";
             mainContainer.appendChild(walletSection);
+            removeLoadingAnimation();
           }else if(item.name == 'Update'){
             const updateSection = createUpdateSection(userID);
             mainContainer.innerHTML = "";
@@ -435,8 +420,45 @@ function validateEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
+
+function createWelcomeContainer(email) {
+  // Get the current hour
+  const currentHour = new Date().getHours();
+
+  // Determine greeting based on the time of day
+  let greeting;
+  if (currentHour >= 6 && currentHour < 11) {
+    greeting = "Good morning!";
+} else if (currentHour >= 11 && currentHour < 15) {
+    greeting = "Good noon!";
+} else if (currentHour >= 15 && currentHour < 18) {
+    greeting = "Good afternoon!";
+} else if (currentHour >= 18 && currentHour < 20) {
+    greeting = "Good evening!";
+} else {
+    greeting = "Restful night!";
+}
+
+  // Create welcome container
+  const welcomeContainer = document.createElement('div');
+  welcomeContainer.classList.add('welcome-container');
+
+  // Create heading
+  const heading = document.createElement('h2');
+  heading.innerHTML = `${greeting} <span>${email}</span>`;
+  welcomeContainer.appendChild(heading);
+
+  // Create paragraph
+  const paragraph = document.createElement('p');
+  paragraph.textContent = 'Welcome back !!';
+  welcomeContainer.appendChild(paragraph);
+
+  // Return the container
+  return welcomeContainer;
+}
+
 //=========================================//
-function createHomeSection(monthData) {
+function createHomeSection(monthData,email) {
     // Create section element
     const section = document.createElement('section');
     section.id = 'home';
@@ -447,6 +469,9 @@ function createHomeSection(monthData) {
     const sectionHeader = createSectionHeader(sectionTitle, sectionIcon, subtitle);
     // Append sectionHeader to wherever you need it in your document
     section.appendChild(sectionHeader);
+    // Create welcome container
+    const welcomeContainer = createWelcomeContainer(email);
+    section.appendChild(welcomeContainer);
 
     // Create monthly-analytics-container div
     const monthlyAnalyticsContainer = document.createElement('div');
@@ -504,8 +529,7 @@ function createHomeSection(monthData) {
     const incomeTable = document.createElement('table');
     const incomeTableHead = document.createElement('thead');
     const incomeTableBody = document.createElement('tbody');
-
-    // Create table headers for income table
+    
     const incomeTableHeaders = ['Time', 'Method', 'Amount'];
     const incomeTableHeadRow = document.createElement('tr');
     incomeTableHeaders.forEach(header => {
@@ -514,26 +538,35 @@ function createHomeSection(monthData) {
         incomeTableHeadRow.appendChild(th);
     });
     incomeTableHead.appendChild(incomeTableHeadRow);
-
-    // Populate income data into table
-    monthData.income.forEach(income => {
-        const row = document.createElement('tr');
-        const timeCell = document.createElement('td');
-        timeCell.textContent = income.timeStamp;
-        const methodCell = document.createElement('td');
-        methodCell.textContent = income.select_method;
-        const amountCell = document.createElement('td');
-        amountCell.textContent = income.amount;
-        row.appendChild(timeCell);
-        row.appendChild(methodCell);
-        row.appendChild(amountCell);
-        incomeTableBody.appendChild(row);
-    });
-
+    
+    if (monthData.income.length === 0) {
+        const noDataMessage = document.createElement('tr');
+        const noDataCell = document.createElement('td');
+        noDataCell.setAttribute('colspan', '2'); 
+        noDataCell.textContent = 'No income data available';
+        noDataMessage.appendChild(noDataCell);
+        incomeTableBody.appendChild(noDataMessage);
+    } else {
+        monthData.income.forEach(income => {
+            const row = document.createElement('tr');
+            const timeCell = document.createElement('td');
+            timeCell.textContent = income.timeStamp;
+            const methodCell = document.createElement('td');
+            methodCell.textContent = income.select_method;
+            const amountCell = document.createElement('td');
+            amountCell.textContent = income.amount;
+            row.appendChild(timeCell);
+            row.appendChild(methodCell);
+            row.appendChild(amountCell);
+            incomeTableBody.appendChild(row);
+        });
+    }
+    
     incomeTable.appendChild(incomeTableHead);
     incomeTable.appendChild(incomeTableBody);
     incomeContainer.appendChild(incomeTitle);
     incomeContainer.appendChild(incomeTable);
+    
 
     // Create expense-container div
     const expenseContainer = document.createElement('div');
@@ -559,22 +592,32 @@ function createHomeSection(monthData) {
     expenseTableHead.appendChild(expenseTableHeadRow);
 
     // Populate expense data into table
+    if (monthData.expense.length === 0) {
+      const noDataMessage = document.createElement('tr');
+      const noDataCell = document.createElement('td');
+      noDataCell.setAttribute('colspan', '3'); 
+      noDataCell.textContent = 'No expense data available';
+      noDataMessage.appendChild(noDataCell);
+      expenseTableBody.appendChild(noDataMessage);
+  }else{
     monthData.expense.forEach(expense => {
-        const row = document.createElement('tr');
-        const timeCell = document.createElement('td');
-        timeCell.textContent = expense.timeStamp;
-        const nameCell = document.createElement('td');
-        nameCell.textContent = expense.name;
-        const categoryCell = document.createElement('td');
-        categoryCell.textContent = expense.category;
-        const amountCell = document.createElement('td');
-        amountCell.textContent = expense.amount;
-        row.appendChild(timeCell);
-        row.appendChild(nameCell);
-        row.appendChild(categoryCell);
-        row.appendChild(amountCell);
-        expenseTableBody.appendChild(row);
+      const row = document.createElement('tr');
+      const timeCell = document.createElement('td');
+      timeCell.textContent = expense.timeStamp;
+      const nameCell = document.createElement('td');
+      nameCell.textContent = expense.name;
+      const categoryCell = document.createElement('td');
+      categoryCell.textContent = expense.category;
+      const amountCell = document.createElement('td');
+      amountCell.textContent = expense.amount;
+      row.appendChild(timeCell);
+      row.appendChild(nameCell);
+      row.appendChild(categoryCell);
+      row.appendChild(amountCell);
+      expenseTableBody.appendChild(row);
     });
+  }
+    
 
     expenseTable.appendChild(expenseTableHead);
     expenseTable.appendChild(expenseTableBody);
@@ -658,6 +701,7 @@ function createLineChart(data) {
 //==============================================//
 
 function createWalletSection(ID,data) {
+  displayLoadingAnimation();
   // Create section element for Wallet
   const walletSection = document.createElement('section');
   walletSection.classList.add('wallet-section');
@@ -680,31 +724,42 @@ function createWalletSection(ID,data) {
   const balanceDetailsContainer = document.createElement('div');
   balanceDetailsContainer.classList.add('balance-details-container');
 
-  // Extract method names from data
-  const walletMethods = data.map(item => item.method_name);
-
-  // Create list of wallet methods
-  const methodList = document.createElement('ul');
-  walletMethods.forEach((method, index) => {
-      const methodItem = document.createElement('li');
-      methodItem.setAttribute('data-name',method);
-      methodItem.textContent = method;
-      methodItem.addEventListener('click', () => {
-          // Remove 'active' class from all method items
-          methodList.querySelectorAll('li').forEach(item => {
-              item.classList.remove('active');
+  if (data.length === 0) {
+      const noDataMessage = document.createElement('p');
+      noDataMessage.textContent = 'No balance data available.';
+      balanceDetailsContainer.appendChild(noDataMessage);
+      removeLoadingAnimation()
+  }else{
+      // Extract method names from data
+      const walletMethods = data.map(item => item.method_name);
+      // Create list of wallet methods
+      const methodList = document.createElement('ul');
+      walletMethods.forEach((method, index) => {
+          const methodItem = document.createElement('li');
+          methodItem.setAttribute('data-name',method);
+          methodItem.textContent = method;
+          methodItem.addEventListener('click', () => {
+              // Remove 'active' class from all method items
+              methodList.querySelectorAll('li').forEach(item => {
+                  item.classList.remove('active');
+              });
+              // Add 'active' class to the clicked method item
+              methodItem.classList.add('active');
+              const balanceData = data.find(item => item.method_name === method);
+              displayBalanceDetails(method,balanceData);
           });
-          // Add 'active' class to the clicked method item
-          methodItem.classList.add('active');
-          const balanceData = data.find(item => item.method_name === method);
-          displayBalanceDetails(method,balanceData);
+          methodList.appendChild(methodItem);
+          if (index === 0) {
+              methodItem.click();
+              methodItem.classList.add('active');
+          }
       });
-      methodList.appendChild(methodItem);
-      if (index === 0) {
-          methodItem.click();
-          methodItem.classList.add('active');
-      }
-  });
+        // Append method list to method container
+      methodContainer.appendChild(methodList);
+
+      removeLoadingAnimation();
+  }
+
 
 
   function displayBalanceDetails(method, balanceData) {
@@ -714,6 +769,7 @@ function createWalletSection(ID,data) {
           let balanceCard = balanceCardDiv.querySelector('.balance-card');
           if (balanceCard) {
               balanceCard.remove();
+              
           }
       }
 
@@ -725,31 +781,38 @@ function createWalletSection(ID,data) {
       // Create delete button
       const deleteButton = document.createElement('span');
       deleteButton.classList.add('delete-button');
-      deleteButton.setAttribute('title','Delete')
+      deleteButton.setAttribute('title', 'Delete')
       deleteButton.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
       deleteButton.addEventListener('click', async () => {
-        try {
-            // Delete document from Firestore
-            await deleteDoc(doc(db, "user", ID, "bank", method));
-            const methodItem = document.querySelector(`.method-container ul li[data-name="${method}"]`);
-            if (methodItem) {
-                methodItem.remove();
-            }
-            card.remove();
-            createModal("Success !!", "Bank details deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting document:", error);
-        }
-    });
-    
+          try {
+              // Delete document from Firestore
+              await deleteDoc(doc(db, "user", ID, "bank", method));
+              const methodItem = document.querySelector(`.method-container ul li[data-name="${method}"]`);
+              if (methodItem) {
+                  methodItem.remove();
+              }
+              card.remove();
+      
+              // Check if there are no more cards remaining
+              if (!document.querySelector('.card')) {
+                  const noDataMessage = document.createElement('p');
+                  noDataMessage.textContent = 'No bank details available.';
+                  balanceDetailsContainer.appendChild(noDataMessage);
+              }
+      
+              createModal("Success !!", "Bank details deleted successfully!");
+          } catch (error) {
+              console.error("Error deleting document:", error);
+          }
+      });
+      
       card.appendChild(deleteButton);
-
       balanceDetailsContainer.appendChild(card);
+      
   }
 
 
-  // Append method list to method container
-  methodContainer.appendChild(methodList);
+
 
   // Append method container and balance details container to wallet container
   walletContainer.appendChild(methodContainer);
@@ -812,7 +875,7 @@ function createUpdateSection(userID) {
   
 
   // Function to display form
-  function displayForm(formName,user) {
+ async function displayForm(formName,user) {
       const currentDate = new Date();
       const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
       const currentYear = currentDate.getFullYear().toString();
@@ -821,70 +884,88 @@ function createUpdateSection(userID) {
 
       // Generate and display the desired form
       if (formName === 'Income') {
+        displayLoadingAnimation();
+        let bankOptions = [];
+        const querySnapshot = await getDocs(collection(db, "user",user,'bank'));
+        querySnapshot.forEach((doc) => {
+          bankOptions.push(doc.data());
+        });
+        const methodNames = bankOptions.map(option => option.method_name);
+        let selectOptions = methodNames.length > 0 ? methodNames : ['No methods available'];
+        
         const inputDetails = [
-            {type: 'select',label: 'Select Method',options: ['Bkash', 'Nagad', 'Rocket','Bank']},
-            {type: 'number',label: 'Amount',}];
+            { type: 'select', label: 'Select Method', options: selectOptions },
+            { type: 'number', label: 'Amount' }
+        ];
           // Code to generate income form
         const heading = document.createElement('h1');
         heading.textContent = 'Income Form';
-
         // Append heading before the form
         formContainer.insertBefore(heading, formContainer.firstChild);
-
         // Code to generate income form
         const incomeForm = generateForm(inputDetails);
         formContainer.appendChild(incomeForm);
-          incomeForm.addEventListener('submit', async (e) => {
-              e.preventDefault();
-              const incomeButton = incomeForm.querySelector('button[type="submit"]');
-              incomeButton.disabled = true;
-              incomeButton.innerHTML = '<i class="fa fa-spinner spin"></i>';
 
-              const formData = new FormData(incomeForm);
-              // Convert FormData to JSON object
-              const formDataObject = {};
-              // Check if any input value is empty
-              let isEmpty = false;
-              formData.forEach((value, key) => {
-                  if (!value.trim()) { // Check if the value is empty or contains only whitespace
-                      isEmpty = true;
-                      createModal("Warning", "Please fill in all fields");
-                      incomeButton.disabled = false;
-                      incomeButton.innerHTML = 'Submit';
-                      return; // Exit the loop early if any input value is empty
-                  }
-                  formDataObject[key] = value;
-              });
+        removeLoadingAnimation();
 
-              formDataObject.timeStamp = new Date().toISOString();
+        incomeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const incomeButton = incomeForm.querySelector('button[type="submit"]');
+            incomeButton.disabled = true;
+            incomeButton.innerHTML = '<i class="fa fa-spinner spin"></i>';
 
-              if (!isEmpty) {
-                try {
-                  const currentMonthData = doc(db, "user", user, currentYear, currentMonth);
-  
-                  // Get existing data (optional, for potential conflict handling)
-                  const docSnapshot = await getDoc(currentMonthData);
-                  let monthData = docSnapshot.exists ? docSnapshot.data() : {}; 
-              
-                  // Append formDataObject to expense array
-                  monthData.income = monthData.income || []; 
-                  monthData.income.push(formDataObject);
-              
-                  await updateDoc(currentMonthData, monthData);
-                  createModal("Success !!","income data saved successfully!"); 
-                  incomeButton.disabled = false;
-                  incomeButton.innerHTML = 'Submit';
-                } catch (error) {
-                  console.error("Error saving income data:", error); // Log error message
+            const formData = new FormData(incomeForm);
+            // Convert FormData to JSON object
+            const formDataObject = {};
+            // Check if any input value is empty
+            let isEmpty = false;
+            formData.forEach((value, key) => {
+                if (!value.trim()) { // Check if the value is empty or contains only whitespace
+                    isEmpty = true;
+                    createModal("Warning", "Please fill in all fields");
+                    incomeButton.disabled = false;
+                    incomeButton.innerHTML = 'Submit';
+                    return; // Exit the loop early if any input value is empty
                 }
+                formDataObject[key] = value;
+            });
+
+            formDataObject.timeStamp = new Date().toISOString();
+
+            if (!isEmpty) {
+              try {
+                const currentMonthData = doc(db, "user", user, currentYear, currentMonth);
+                const bankRef = doc(db, "user", user,"bank" ,formDataObject.select_method);
+                // Get existing data (optional, for potential conflict handling)
+                const docSnapshot = await getDoc(currentMonthData);
+                let monthData = docSnapshot.exists ? docSnapshot.data() : {}; 
+                // Append formDataObject to expense array
+                monthData.income = monthData.income || []; 
+                monthData.income.push(formDataObject);
+                await updateDoc(currentMonthData, monthData);
+
+                let bankData =  bankOptions.find(option => option.method_name === formDataObject.select_method);
+                bankData.current_amount = parseAmount(bankData.current_amount) + parseAmount(formDataObject.amount);
+                bankData.timeStamp = new Date().toISOString();
+                await updateDoc(bankRef, bankData);
+
+                createModal("Success !!","Income data saved successfully!"); 
+                incomeButton.disabled = false;
+                incomeButton.innerHTML = 'Submit';
+              } catch (error) {
+                console.error("Error saving income data:", error); // Log error message
               }
-              
-          });
+            }
+            
+        });
 
       } else if (formName === 'Expense') {
+        const expenseCategories = [
+          
+      ];
           const inputDetails = [
             {type: 'text',label: 'Name'},
-            {type: 'text',label: 'Category'},
+            {type: 'select',label: 'Category',options: ['Tuition Fees','Books/Supplies','Housing/Rent','Food/Groceries','Transportation','Personal Care','Entertainment/Socializing','Miscellaneous']},
             {type: 'number',label: 'Amount',}];
           // Code to generate income form
           const heading = document.createElement('h1');
@@ -1053,6 +1134,11 @@ function generateFormElement(inputDetails) {
 }
 //===========================================//
 function createModal(title, content) {
+  // Check if a modal with the same title already exists
+  if (document.querySelector(`.modal-title[data-title="${title}"]`)) {
+      return; // Exit function if modal already exists
+  }
+
   // Create modal container
   const modalContainer = document.createElement('div');
   modalContainer.classList.add('modal-container');
@@ -1069,6 +1155,7 @@ function createModal(title, content) {
   const modalTitle = document.createElement('h2');
   modalTitle.textContent = title;
   modalTitle.classList.add('modal-title');
+  modalTitle.dataset.title = title; // Set data-title attribute to title
 
   // Create close button
   const closeButton = document.createElement('button');
@@ -1085,7 +1172,27 @@ function createModal(title, content) {
   // Create modal body
   const modalBody = document.createElement('div');
   modalBody.classList.add('modal-body');
-  modalBody.innerHTML = content;
+
+  // Check if content type is object and has newMonth set to true
+  if (typeof content === 'object' && content.newMonth === true) {
+      const message = document.createElement('p');
+      message.innerHTML = content.message;
+
+      // Create "Start New Month" button
+      const startNewMonthButton = document.createElement('button');
+      startNewMonthButton.textContent = "Start New Month";
+      startNewMonthButton.addEventListener('click', () => {
+          startNewMonth(content.user);
+          modalContainer.remove(); // Remove the modal from the DOM after starting new month
+      });
+
+      // Append message and button to modal body
+      modalBody.appendChild(message);
+      modalBody.appendChild(startNewMonthButton);
+  } else {
+      // If content is not an object or newMonth is not true, treat content as HTML
+      modalBody.innerHTML = content;
+  }
 
   // Append modal header and modal body to modal content
   modalContent.appendChild(modalHeader);
@@ -1097,8 +1204,62 @@ function createModal(title, content) {
   // Append modal container to the body
   document.body.appendChild(modalContainer);
 }
+//=================================//
+function startNewMonth(userID){
+  displayLoadingAnimation();
 
-// Example usage:
-// const modalTitle = 'Modal Title';
-// const modalContent = 'This is the modal content.';
-// createModal(modalTitle, modalContent);
+  // Get current year and month
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear().toString();
+  const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+  // Create references for empty paths
+  const newMonthRef = doc(db, "user", userID, currentYear, currentMonth);
+  // Create empty objects (optional for clarity)
+  const newMonthData = {
+    income: [],
+    expense: [],
+    month: currentMonth
+  };
+  try{
+    setDoc(newMonthRef, newMonthData);
+    // console.log("Empty paths created  successfully!");
+    removeLoadingAnimation();
+    createModal("Success !!","Congratulations! Your new month has started. Make it count with fresh goals and renewed determination towards success!");
+    createPrimaryElements(userID);
+  }catch (error) {
+    console.error("Error adding document: ", error);
+    createModal('Failed !!', 'Something Went Wrong. Please Try Again.');
+    removeLoadingAnimation();
+  }
+  
+}
+
+//====================================//
+function displayLoadingAnimation() {
+  // Create loading container
+  const loadingContainer = document.createElement('div');
+  loadingContainer.classList.add('loading-container');
+
+  // Create loading animation
+  const loadingAnimation = document.createElement('div');
+  loadingAnimation.classList.add('loader');
+
+  // Append loading animation to loading container
+  loadingContainer.appendChild(loadingAnimation);
+
+  // Append loading container to the body
+  document.body.appendChild(loadingContainer);
+
+  return loadingContainer; // Return the loading container reference
+}
+
+function removeLoadingAnimation() {
+  // Select the loading container
+  const loadingContainer = document.querySelector('.loading-container');
+
+  // Check if loading container exists
+  if (loadingContainer && loadingContainer.parentNode) {
+      // Remove loading container from the DOM
+      loadingContainer.parentNode.removeChild(loadingContainer);
+  }
+}

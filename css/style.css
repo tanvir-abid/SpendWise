@@ -297,6 +297,35 @@ main {
     font-size: 10px;
   }
 }
+/*========================*/
+.welcome-container {
+  position: relative;
+  width: 100%;
+  padding: 20px;
+  background: rgba(0,0,0, 0.15); 
+  backdrop-filter: blur(10px); 
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); 
+}
+
+.welcome-container h2 {
+  color: #fff; /* Text color */
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5); 
+  padding: 10px;
+}
+
+.welcome-container h2 span {
+  text-transform: capitalize;
+}
+
+.welcome-container p {
+  color: #fff; /* Text color */
+  font-size: 16px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5); 
+  padding: 0 10px;
+}
+
 /*======================*/
 .monthly-analytics-container{
     padding: 10px;
@@ -871,7 +900,41 @@ button[type="submit"]:hover {
 .modal-body {
   min-height: 100px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
 }
+
+.modal-body h2{
+  padding: 5px;
+  margin-bottom: 5px;
+  font-weight: bolder;
+}
+
+.modal-body p{
+  padding: 5px;
+}
+
+.modal-body button {
+  align-self: flex-end;
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: transparent; 
+  border: 1px solid rgba(255, 255, 255, 0.3); 
+  border-radius: 20px;
+  color: #eee; /* Text color */
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-body button:hover {
+  background-color: rgba(255, 255, 255, 0.2); 
+  border: 1px solid rgba(255, 255, 255, 0.5); 
+  color: #fff; 
+}
+
 
 @media screen and (max-width:768px) {
   .modal-content {
@@ -884,5 +947,62 @@ button[type="submit"]:hover {
 
   .modal-body {
     font-size: 13px;
+  }
+}
+
+/*===============================*/
+.loading-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; 
+}
+/* Main Loader */
+.loader {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  overflow: hidden;
+  border-radius: 50%;
+  animation: circleAnimation 1s linear infinite;
+}
+
+.loader::before,
+.loader::after {
+  content: "";
+  position: absolute;
+}
+
+/* Glassmorphism */
+.loader::before {
+  inset: 10px;
+  background: rgba(233, 30, 99, 0.05);
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+/* animated Circle */
+.loader::after {
+  top: -50%;
+  left: -50%;
+  width: 100%;
+  height: 100%;
+  background: #ff6198;
+}
+
+@keyframes circleAnimation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
