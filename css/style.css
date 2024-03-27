@@ -417,6 +417,7 @@ main {
   padding: 15px;
 }
 
+.cash-out-container,
 .income-container,
 .expense-container {
   margin-bottom: 20px;
@@ -429,6 +430,7 @@ main {
   padding: 10px;
 }
 
+.cash-out-container h2,
 .income-container h2,
 .expense-container h2 {
   color: #fff;
@@ -436,6 +438,7 @@ main {
   margin-bottom: 10px;
 }
 
+.cash-out-container table,
 .income-container table,
 .expense-container table {
   width: 100%;
@@ -446,35 +449,37 @@ main {
   font-size: 12px;
 }
 
+.cash-out-container th,
 .income-container th,
 .expense-container th,
+.cash-out-container td,
 .income-container td,
 .expense-container td {
   padding: 10px;
   text-align: left;
+  color: #fff;
 }
 
+.cash-out-container th,
 .income-container th,
 .expense-container th {
   background-color: rgba(255, 255, 255, 0.3);
   color: #fff;
 }
 
+.cash-out-container tr:nth-child(even),
 .income-container tr:nth-child(even),
 .expense-container tr:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.cash-out-container tr:nth-child(odd),
 .income-container tr:nth-child(odd),
 .expense-container tr:nth-child(odd) {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.income-container td,
-.expense-container td {
-  color: #fff;
-}
-
+.cash-out-container td:last-child,
 .income-container td:last-child,
 .expense-container td:last-child {
   text-align: right;

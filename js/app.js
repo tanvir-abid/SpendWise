@@ -24,6 +24,8 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
+
+
 //=====================================//
 function createCredentialSection(){
   // Create main container section
@@ -144,6 +146,7 @@ function createCredentialSection(){
               const yearMonthData = {
                 income: [],
                 expense: [],
+                cashOut: [],
                 month: currentMonth
               };
               try{
@@ -550,7 +553,7 @@ function createHomeSection(monthData,email) {
         monthData.income.forEach(income => {
             const row = document.createElement('tr');
             const timeCell = document.createElement('td');
-            timeCell.textContent = income.timeStamp;
+            timeCell.textContent = formatTimeStamp(income.timeStamp);
             const methodCell = document.createElement('td');
             methodCell.textContent = income.select_method;
             const amountCell = document.createElement('td');
@@ -603,7 +606,7 @@ function createHomeSection(monthData,email) {
     monthData.expense.forEach(expense => {
       const row = document.createElement('tr');
       const timeCell = document.createElement('td');
-      timeCell.textContent = expense.timeStamp;
+      timeCell.textContent = formatTimeStamp(expense.timeStamp);
       const nameCell = document.createElement('td');
       nameCell.textContent = expense.name;
       const categoryCell = document.createElement('td');
@@ -617,29 +620,82 @@ function createHomeSection(monthData,email) {
       expenseTableBody.appendChild(row);
     });
   }
-    
 
-    expenseTable.appendChild(expenseTableHead);
-    expenseTable.appendChild(expenseTableBody);
-    expenseContainer.appendChild(expenseTitle);
-    expenseContainer.appendChild(expenseTable);
+  expenseTable.appendChild(expenseTableHead);
+  expenseTable.appendChild(expenseTableBody);
+  expenseContainer.appendChild(expenseTitle);
+  expenseContainer.appendChild(expenseTable);
 
-    // Append income-container and expense-container to total-income-expense-container
-    totalIncomeExpenseContainer.appendChild(incomeContainer);
-    totalIncomeExpenseContainer.appendChild(expenseContainer);
+  // Create cash-out-container div
+const cashOutContainer = document.createElement('div');
+cashOutContainer.className = 'cash-out-container';
 
-    // Append monthly-analytics-container and total-income-expense-container to section
+// Create h2 tag for cash out
+const cashOutTitle = document.createElement('h2');
+cashOutTitle.textContent = `Withdrawal of ${currentMonth}`;
 
-    section.appendChild(totalIncomeExpenseContainer);
+// Create table for cash out data
+const cashOutTable = document.createElement('table');
+const cashOutTableHead = document.createElement('thead');
+const cashOutTableBody = document.createElement('tbody');
 
-    const chartContainer = document.createElement('div');
-    chartContainer.classList.add('chartContainer');
+// Create table headers for cash out table
+const cashOutTableHeaders = ['Time', 'Method','Amount'];
+const cashOutTableHeadRow = document.createElement('tr');
+cashOutTableHeaders.forEach(header => {
+    const th = document.createElement('th');
+    th.textContent = header;
+    cashOutTableHeadRow.appendChild(th);
+});
+cashOutTableHead.appendChild(cashOutTableHeadRow);
 
-    // let canvas = createLineChart(monthData);
-    // chartContainer.appendChild(canvas);
-    // section.appendChild(chartContainer);
+// Populate cash out data into table
+if (monthData.cashOut.length === 0) {
+    const noDataMessage = document.createElement('tr');
+    const noDataCell = document.createElement('td');
+    noDataCell.setAttribute('colspan', '2'); 
+    noDataCell.textContent = 'No Withdrawal data available';
+    noDataMessage.appendChild(noDataCell);
+    cashOutTableBody.appendChild(noDataMessage);
+} else {
+    monthData.cashOut.forEach(cashOut => {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        timeCell.textContent = formatTimeStamp(cashOut.timeStamp);
+        const methodCell = document.createElement('td');
+        methodCell.textContent = cashOut.select_method;
+        const amountCell = document.createElement('td');
+        amountCell.textContent = cashOut.amount;
+        row.appendChild(timeCell);
+        row.appendChild(methodCell);
+        row.appendChild(amountCell);
+        cashOutTableBody.appendChild(row);
+    });
+}
 
-    return section;
+cashOutTable.appendChild(cashOutTableHead);
+cashOutTable.appendChild(cashOutTableBody);
+cashOutContainer.appendChild(cashOutTitle);
+cashOutContainer.appendChild(cashOutTable);
+
+
+  // Append income-container and expense-container to total-income-expense-container
+  totalIncomeExpenseContainer.appendChild(incomeContainer);
+  totalIncomeExpenseContainer.appendChild(expenseContainer);
+  totalIncomeExpenseContainer.appendChild(cashOutContainer);
+
+  // Append monthly-analytics-container and total-income-expense-container to section
+
+  section.appendChild(totalIncomeExpenseContainer);
+
+  const chartContainer = document.createElement('div');
+  chartContainer.classList.add('chartContainer');
+
+  // let canvas = createLineChart(monthData);
+  // chartContainer.appendChild(canvas);
+  // section.appendChild(chartContainer);
+
+  return section;
 }
 
 function createLineChart(data) {
@@ -833,7 +889,7 @@ function createUpdateSection(userID) {
 
   const sectionTitle = 'Update';
   const sectionIcon = '<i class="fa fa-wrench"></i>';
-  const subtitle = 'See where your balance is';
+  const subtitle = 'Update your income and expense';
   const sectionHeader = createSectionHeader(sectionTitle, sectionIcon, subtitle);
   updateSection.appendChild(sectionHeader);
 
@@ -850,7 +906,7 @@ function createUpdateSection(userID) {
   formContainer.classList.add('form-container');
 
   // Array of form names
-  const formNames = ['Income', 'Expense', 'Add Bank'];
+  const formNames = ['Income', 'Expense','Cash Out', 'Add Bank'];
 
   // Create list of form names
   const formList = document.createElement('ul');
@@ -960,9 +1016,6 @@ function createUpdateSection(userID) {
         });
 
       } else if (formName === 'Expense') {
-        const expenseCategories = [
-          
-      ];
           const inputDetails = [
             {type: 'text',label: 'Name'},
             {type: 'select',label: 'Category',options: ['Tuition Fees','Books/Supplies','Housing/Rent','Food/Groceries','Transportation','Personal Care','Entertainment/Socializing','Miscellaneous']},
@@ -1016,6 +1069,82 @@ function createUpdateSection(userID) {
                 expenseButton.innerHTML = 'Submit';
             }
         });        
+
+      }else if (formName === 'Cash Out') {
+        displayLoadingAnimation();
+        let bankOptions = [];
+        const querySnapshot = await getDocs(collection(db, "user",user,'bank'));
+        querySnapshot.forEach((doc) => {
+          bankOptions.push(doc.data());
+        });
+        const methodNames = bankOptions.map(option => option.method_name);
+        let selectOptions = methodNames.length > 0 ? methodNames : ['No methods available'];
+        
+        const inputDetails = [
+            { type: 'select', label: 'Select Method', options: selectOptions },
+            { type: 'number', label: 'Amount' }
+        ];
+          // Code to generate income form
+        const heading = document.createElement('h1');
+        heading.textContent = 'Cash Out Form';
+        // Append heading before the form
+        formContainer.insertBefore(heading, formContainer.firstChild);
+        // Code to generate income form
+        const cashOutForm = generateForm(inputDetails);
+        formContainer.appendChild(cashOutForm);
+
+        removeLoadingAnimation();
+
+        cashOutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cashOutButton = cashOutForm.querySelector('button[type="submit"]');
+            cashOutButton.disabled = true;
+            cashOutButton.innerHTML = '<i class="fa fa-spinner spin"></i>';
+
+            const formData = new FormData(cashOutForm);
+            // Convert FormData to JSON object
+            const formDataObject = {};
+            // Check if any input value is empty
+            let isEmpty = false;
+            formData.forEach((value, key) => {
+                if (!value.trim()) { // Check if the value is empty or contains only whitespace
+                    isEmpty = true;
+                    createModal("Warning", "Please fill in all fields");
+                    cashOutButton.disabled = false;
+                    cashOutButton.innerHTML = 'Submit';
+                    return; // Exit the loop early if any input value is empty
+                }
+                formDataObject[key] = value;
+            });
+
+            formDataObject.timeStamp = new Date().toISOString();
+
+            if (!isEmpty) {
+              try {
+                const currentMonthData = doc(db, "user", user, currentYear, currentMonth);
+                const bankRef = doc(db, "user", user,"bank" ,formDataObject.select_method);
+                // Get existing data (optional, for potential conflict handling)
+                const docSnapshot = await getDoc(currentMonthData);
+                let monthData = docSnapshot.exists ? docSnapshot.data() : {}; 
+                // Append formDataObject to expense array
+                monthData.cashOut = monthData.cashOut || []; 
+                monthData.cashOut.push(formDataObject);
+                await updateDoc(currentMonthData, monthData);
+
+                let bankData =  bankOptions.find(option => option.method_name === formDataObject.select_method);
+                bankData.current_amount = parseAmount(bankData.current_amount) - parseAmount(formDataObject.amount);
+                bankData.timeStamp = new Date().toISOString();
+                await updateDoc(bankRef, bankData);
+
+                createModal("Success !!","Cash Out data saved successfully!"); 
+                cashOutButton.disabled = false;
+                cashOutButton.innerHTML = 'Submit';
+              } catch (error) {
+                console.error("Error saving Cash Out data:", error); // Log error message
+              }
+            }
+            
+        });
 
       } else if (formName === 'Add Bank') {
         const inputDetails = [
@@ -1218,6 +1347,7 @@ function startNewMonth(userID){
   const newMonthData = {
     income: [],
     expense: [],
+    cashOut: [],
     month: currentMonth
   };
   try{
@@ -1262,4 +1392,17 @@ function removeLoadingAnimation() {
       // Remove loading container from the DOM
       loadingContainer.parentNode.removeChild(loadingContainer);
   }
+}
+//==================================//
+function formatTimeStamp(timestamp) {
+  const date = new Date(timestamp);
+  const formattedDate = date.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+  });
+  return formattedDate;
 }
