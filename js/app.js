@@ -24,8 +24,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-
-
 //=====================================//
 function createCredentialSection(){
   // Create main container section
@@ -283,7 +281,7 @@ async function createPrimaryElements(userID,userEmail) {
             const walletSection = createWalletSection(userID,bankData);
             mainContainer.innerHTML = "";
             mainContainer.appendChild(walletSection);
-            removeLoadingAnimation();
+            
           }else if(item.name == 'Update'){
             const updateSection = createUpdateSection(userID);
             mainContainer.innerHTML = "";
@@ -460,6 +458,53 @@ function createWelcomeContainer(email) {
   return welcomeContainer;
 }
 
+function createTable(data) {
+  const table = document.createElement('table');
+  const tableHead = document.createElement('thead');
+  const tableBody = document.createElement('tbody');
+
+  const headers = ['Time', 'Method', 'Amount'];
+  // Create table headers
+  const tableHeadRow = document.createElement('tr');
+  headers.forEach(header => {
+      const th = document.createElement('th');
+      th.textContent = header;
+      tableHeadRow.appendChild(th);
+  });
+  tableHead.appendChild(tableHeadRow);
+
+  // Check if data is empty
+  if (data.length === 0) {
+      // Create a row with a message if data is empty
+      const noDataMessage = document.createElement('tr');
+      const noDataCell = document.createElement('td');
+      noDataCell.setAttribute('colspan', headers.length.toString()); // Set colspan to span all columns
+      noDataCell.textContent = 'No data available';
+      noDataMessage.appendChild(noDataCell);
+      tableBody.appendChild(noDataMessage);
+  } else {
+      // Populate table rows with data
+      data.forEach(item => {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        timeCell.textContent = formatTimeStamp(item.timeStamp);
+        const methodCell = document.createElement('td');
+        methodCell.textContent = item.select_method;
+        const amountCell = document.createElement('td');
+        amountCell.textContent = item.amount;
+        row.appendChild(timeCell);
+        row.appendChild(methodCell);
+        row.appendChild(amountCell);
+          tableBody.appendChild(row);
+      });
+  }
+
+  // Append table head and body to the table element
+  table.appendChild(tableHead);
+  table.appendChild(tableBody);
+
+  return table;
+}
 //=========================================//
 function createHomeSection(monthData,email) {
     // Create section element
@@ -522,58 +567,22 @@ function createHomeSection(monthData,email) {
     const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
     // Create income-container div
     const incomeContainer = document.createElement('div');
-    incomeContainer.className = 'income-container';
+    incomeContainer.className = 'income-container table-container';
 
     // Create h2 tag for income
     const incomeTitle = document.createElement('h2');
     incomeTitle.textContent = `Income of ${currentMonth}`;
 
     // Create table for income data
-    const incomeTable = document.createElement('table');
-    const incomeTableHead = document.createElement('thead');
-    const incomeTableBody = document.createElement('tbody');
-    
-    const incomeTableHeaders = ['Time', 'Method', 'Amount'];
-    const incomeTableHeadRow = document.createElement('tr');
-    incomeTableHeaders.forEach(header => {
-        const th = document.createElement('th');
-        th.textContent = header;
-        incomeTableHeadRow.appendChild(th);
-    });
-    incomeTableHead.appendChild(incomeTableHeadRow);
-    
-    if (monthData.income.length === 0) {
-        const noDataMessage = document.createElement('tr');
-        const noDataCell = document.createElement('td');
-        noDataCell.setAttribute('colspan', '2'); 
-        noDataCell.textContent = 'No income data available';
-        noDataMessage.appendChild(noDataCell);
-        incomeTableBody.appendChild(noDataMessage);
-    } else {
-        monthData.income.forEach(income => {
-            const row = document.createElement('tr');
-            const timeCell = document.createElement('td');
-            timeCell.textContent = formatTimeStamp(income.timeStamp);
-            const methodCell = document.createElement('td');
-            methodCell.textContent = income.select_method;
-            const amountCell = document.createElement('td');
-            amountCell.textContent = income.amount;
-            row.appendChild(timeCell);
-            row.appendChild(methodCell);
-            row.appendChild(amountCell);
-            incomeTableBody.appendChild(row);
-        });
-    }
-    
-    incomeTable.appendChild(incomeTableHead);
-    incomeTable.appendChild(incomeTableBody);
+    const incomeTable = createTable(monthData.income);
+
     incomeContainer.appendChild(incomeTitle);
     incomeContainer.appendChild(incomeTable);
     
 
     // Create expense-container div
     const expenseContainer = document.createElement('div');
-    expenseContainer.className = 'expense-container';
+    expenseContainer.className = 'expense-container table-container';
 
     // Create h2 tag for expense
     const expenseTitle = document.createElement('h2');
@@ -628,53 +637,15 @@ function createHomeSection(monthData,email) {
 
   // Create cash-out-container div
 const cashOutContainer = document.createElement('div');
-cashOutContainer.className = 'cash-out-container';
+cashOutContainer.className = 'cash-out-container table-container';
 
 // Create h2 tag for cash out
 const cashOutTitle = document.createElement('h2');
 cashOutTitle.textContent = `Withdrawal of ${currentMonth}`;
 
 // Create table for cash out data
-const cashOutTable = document.createElement('table');
-const cashOutTableHead = document.createElement('thead');
-const cashOutTableBody = document.createElement('tbody');
+const cashOutTable = createTable(monthData.cashOut);
 
-// Create table headers for cash out table
-const cashOutTableHeaders = ['Time', 'Method','Amount'];
-const cashOutTableHeadRow = document.createElement('tr');
-cashOutTableHeaders.forEach(header => {
-    const th = document.createElement('th');
-    th.textContent = header;
-    cashOutTableHeadRow.appendChild(th);
-});
-cashOutTableHead.appendChild(cashOutTableHeadRow);
-
-// Populate cash out data into table
-if (monthData.cashOut.length === 0) {
-    const noDataMessage = document.createElement('tr');
-    const noDataCell = document.createElement('td');
-    noDataCell.setAttribute('colspan', '2'); 
-    noDataCell.textContent = 'No Withdrawal data available';
-    noDataMessage.appendChild(noDataCell);
-    cashOutTableBody.appendChild(noDataMessage);
-} else {
-    monthData.cashOut.forEach(cashOut => {
-        const row = document.createElement('tr');
-        const timeCell = document.createElement('td');
-        timeCell.textContent = formatTimeStamp(cashOut.timeStamp);
-        const methodCell = document.createElement('td');
-        methodCell.textContent = cashOut.select_method;
-        const amountCell = document.createElement('td');
-        amountCell.textContent = cashOut.amount;
-        row.appendChild(timeCell);
-        row.appendChild(methodCell);
-        row.appendChild(amountCell);
-        cashOutTableBody.appendChild(row);
-    });
-}
-
-cashOutTable.appendChild(cashOutTableHead);
-cashOutTable.appendChild(cashOutTableBody);
 cashOutContainer.appendChild(cashOutTitle);
 cashOutContainer.appendChild(cashOutTable);
 
@@ -690,10 +661,19 @@ cashOutContainer.appendChild(cashOutTable);
 
   const chartContainer = document.createElement('div');
   chartContainer.classList.add('chartContainer');
-
-  // let canvas = createLineChart(monthData);
-  // chartContainer.appendChild(canvas);
-  // section.appendChild(chartContainer);
+  
+  // Create container header
+  const containerHeader = document.createElement('div');
+  containerHeader.classList.add('container-header');
+  containerHeader.textContent = 'Monthly Analytics'; // Set the header text here
+  
+  // Append container header to chartContainer
+  chartContainer.appendChild(containerHeader);
+  
+  let canvas = createLineChart(monthData);
+  chartContainer.appendChild(canvas);
+  section.appendChild(chartContainer);
+  
 
   return section;
 }
@@ -728,7 +708,7 @@ function createLineChart(data) {
               fill: false
           }, {
               label: 'Expense',
-              borderColor: '#ofa',
+              borderColor: '#0fa',
               data: expenseData,
               fill: false
           }]
@@ -737,23 +717,29 @@ function createLineChart(data) {
           scales: {
               x: {
                   type: 'time',
-                  time: {
-                      unit: 'day'
-                  }
+                  time: {unit: 'day'},
+                  ticks: {color: '#fff'},
+                  grid: {color: '#ffffff31'}
               },
               y: {
-                  beginAtZero: true
+                  beginAtZero: true,
+                  ticks: {color: '#fff'},
+                  grid: {color: '#ffffff31'}
               }
           },
-          title: {
-            display: true,
-            text: 'Monthly Income Expense Chart'
+          plugins: {
+              title: {
+                display: true,
+                text: 'Monthly Income Expense Chart',
+                color: '#fff' // Set title text color to white
+              }
           }
       }
   });
   
   return canvas;
 }
+
 //==============================================//
 
 function createWalletSection(ID,data) {
@@ -816,8 +802,6 @@ function createWalletSection(ID,data) {
       removeLoadingAnimation();
   }
 
-
-
   function displayBalanceDetails(method, balanceData) {
       // Clear previous content in balance details container
       let balanceCardDiv = document.querySelector('.balance-details-container');
@@ -867,9 +851,6 @@ function createWalletSection(ID,data) {
       
   }
 
-
-
-
   // Append method container and balance details container to wallet container
   walletContainer.appendChild(methodContainer);
   walletContainer.appendChild(balanceDetailsContainer);
@@ -877,8 +858,139 @@ function createWalletSection(ID,data) {
   // Append wallet container to wallet section
   walletSection.appendChild(walletContainer);
 
+  // Append methodWise-income-expense-container 
+  createMethodWiseIncomeExpenseContainer(ID).then(container => {
+    walletSection.appendChild(container);
+  });
+
   // Return wallet section
   return walletSection;
+}
+
+// Function to create the methodWise-income-expense-container
+async function createMethodWiseIncomeExpenseContainer(userID) {
+  const container = document.createElement('div');
+  container.classList.add('methodWise-income-expense-container');
+
+  // Get current month and year
+  let currentMonth = new Date().getMonth();
+  let currentYear = new Date().getFullYear();
+
+  // Create control-header
+  const controlHeader = document.createElement('div');
+  controlHeader.classList.add('control-header');
+
+  // Create montWise-tables-container
+  const montWiseTablesContainer = document.createElement('div');
+  montWiseTablesContainer.classList.add('montWise-tables-container');
+
+  function noMessage(){
+    montWiseTablesContainer.innerHTML = "";
+    const warningContainer = document.createElement('div');
+    warningContainer.classList.add('warning-message-container');
+
+    const h1 = document.createElement('h1');
+    h1.innerHTML = 'No Data Found For This Month.';
+    warningContainer.appendChild(h1);
+    montWiseTablesContainer.appendChild(warningContainer);
+  }
+  // Function to generate month-wise tables container
+  async function generateMonthWiseTables(monthData) {
+    // Clear existing content of montWiseTablesContainer
+    montWiseTablesContainer.innerHTML = '';
+
+    // Create income table container
+    const incomeTableContainer = document.createElement('div');
+    incomeTableContainer.classList.add('table-container');
+    const incomeTableHeader = document.createElement('h2');
+    incomeTableHeader.textContent = 'Income';
+    incomeTableContainer.appendChild(incomeTableHeader);
+    incomeTableContainer.appendChild(await createTable(monthData.income));
+    montWiseTablesContainer.appendChild(incomeTableContainer);
+
+    // Create withdrawal table container
+    const withdrawalTableContainer = document.createElement('div');
+    withdrawalTableContainer.classList.add('table-container');
+    const withdrawalTableHeader = document.createElement('h2');
+    withdrawalTableHeader.textContent = 'Withdrawal';
+    withdrawalTableContainer.appendChild(withdrawalTableHeader);
+    withdrawalTableContainer.appendChild(await createTable(monthData.cashOut));
+    montWiseTablesContainer.appendChild(withdrawalTableContainer);
+
+    return montWiseTablesContainer;
+  }
+
+  // Create previous button
+  const previousButton = document.createElement('button');
+  previousButton.textContent = 'Previous';
+  previousButton.addEventListener('click', async () => {
+    currentMonth--; // Decrement current month
+    if (currentMonth < 0) {
+      currentMonth = 11; // Wrap around to December if current month becomes negative
+      currentYear--; // Decrement year when wrapping around
+    }
+    const updatedDate = new Date(currentYear, currentMonth);
+    monthYearDisplay.textContent = updatedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    displayLoadingAnimation();
+    const docSnap = await getDoc(doc(db, "user",userID, currentYear.toString(), updatedDate.toLocaleString('default', { month: 'long' }) ));
+    if (docSnap.exists()) {
+      container.appendChild(await generateMonthWiseTables(docSnap.data()));
+      removeLoadingAnimation();
+    } else {
+      noMessage();
+      removeLoadingAnimation();
+    }
+  });
+
+  controlHeader.appendChild(previousButton);
+
+  // Create month and year display
+  const monthYearDisplay = document.createElement('h2');
+  monthYearDisplay.textContent = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+  controlHeader.appendChild(monthYearDisplay);
+
+  // Create next button
+  const nextButton = document.createElement('button');
+  nextButton.textContent = 'Next';
+  nextButton.addEventListener('click', async () => {
+    currentMonth++; // Increment current month
+    if (currentMonth > 11) {
+      currentMonth = 0; // Wrap around to January if current month exceeds 11 (December)
+      currentYear++; // Increment year when wrapping around
+    }
+    const updatedDate = new Date(currentYear, currentMonth);
+    monthYearDisplay.textContent = updatedDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    displayLoadingAnimation();
+    const docSnap = await getDoc(doc(db, "user",userID, currentYear.toString(), updatedDate.toLocaleString('default', { month: 'long' }) ));
+    if (docSnap.exists()) {
+      container.appendChild(await generateMonthWiseTables(docSnap.data()));
+      removeLoadingAnimation();
+    } else {
+      noMessage();
+      removeLoadingAnimation();
+    }
+  });
+
+  controlHeader.appendChild(nextButton);
+
+  container.appendChild(controlHeader);
+  console.log(userID);
+  
+  const currentDate = new Date();
+  const initialYear = currentDate.getFullYear().toString();
+  const initialMonth = currentDate.toLocaleString('default', { month: 'long' });
+
+  const docSnap = await getDoc(doc(db, "user",userID, initialYear, initialMonth));
+  
+  if (docSnap.exists()) {
+    container.appendChild(await generateMonthWiseTables(docSnap.data()));
+    removeLoadingAnimation();
+  } else {
+    noMessage();
+    removeLoadingAnimation();
+  }
+
+  return container;
 }
 
 //======================================//

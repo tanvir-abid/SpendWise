@@ -409,6 +409,7 @@ main {
   }
 }
 /*=========================*/
+.montWise-tables-container,
 .total-income-expense-container{
   display: flex;
   flex-wrap: wrap;
@@ -417,9 +418,7 @@ main {
   padding: 15px;
 }
 
-.cash-out-container,
-.income-container,
-.expense-container {
+.table-container {
   margin-bottom: 20px;
   flex: 1;
   backdrop-filter: blur(15px) saturate(200%);
@@ -430,17 +429,13 @@ main {
   padding: 10px;
 }
 
-.cash-out-container h2,
-.income-container h2,
-.expense-container h2 {
+.table-container h2 {
   color: #fff;
   font-size: 1.5rem;
   margin-bottom: 10px;
 }
 
-.cash-out-container table,
-.income-container table,
-.expense-container table {
+.table-container table {
   width: 100%;
   border-collapse: collapse;
   background-color: rgba(255, 255, 255, 0.1);
@@ -449,55 +444,59 @@ main {
   font-size: 12px;
 }
 
-.cash-out-container th,
-.income-container th,
-.expense-container th,
-.cash-out-container td,
-.income-container td,
-.expense-container td {
+.table-container th,
+.table-container td {
   padding: 10px;
   text-align: left;
   color: #fff;
 }
 
-.cash-out-container th,
-.income-container th,
-.expense-container th {
+.table-container th {
   background-color: rgba(255, 255, 255, 0.3);
   color: #fff;
 }
 
-.cash-out-container tr:nth-child(even),
-.income-container tr:nth-child(even),
-.expense-container tr:nth-child(even) {
+.table-container tr:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.cash-out-container tr:nth-child(odd),
-.income-container tr:nth-child(odd),
-.expense-container tr:nth-child(odd) {
+.table-container tr:nth-child(odd) {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.cash-out-container td:last-child,
-.income-container td:last-child,
-.expense-container td:last-child {
+.table-container td:last-child {
   text-align: right;
 }
 
 .chartContainer{
-  backdrop-filter: blur(15px) saturate(200%);
-  -webkit-backdrop-filter: blur(15px) saturate(200%);
-  background-color: rgba(17, 25, 40, 0.81);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.125);
-  width: 80%;
+  width: 95%;
   margin: 0 auto;
 }
 
-@media screen and (max-width: 768px) {
-  
+.container-header {
+  background: rgba(255, 255, 255, 0.2); /* Adjust the opacity as needed */
+  backdrop-filter: blur(10px); /* Adjust the blur radius as needed */
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 20px;
+  color: rgba(0, 0, 0, 0.7); /* Adjust the text color as needed */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+  color: #fff;
+  font-weight: bolder;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
+
+.chartContainer canvas{
+  backdrop-filter: blur(15px) saturate(200%);
+  -webkit-backdrop-filter: blur(15px) saturate(200%);
+  background-color: rgba(17, 25, 40, 0.5);
+  margin-bottom: 30px;
+  padding: 5px;
+}
+
 /*=============================*/
 .wallet-container{
   padding: 15px;
@@ -663,6 +662,61 @@ main {
   top: 0;
   padding: 10px;
   cursor: pointer;
+}
+
+.montWise-tables-container{
+  width: 100%;
+}
+
+.control-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 15px;
+  background-color: rgba(0,0,0, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  color: #fff;
+}
+
+.control-header button {
+  border: none;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.control-header button:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+}
+
+.control-header button:active {
+  transform: translateY(4px);
+  box-shadow: 0 4px 20px rgba(31, 38, 135, 0.37);
+}
+
+.control-header button:first-child {
+  margin-right: 10px; /* Adjust spacing between buttons */
+}
+
+.warning-message-container {
+  min-height: 35vh;
+  background-color: rgba(0, 0, 0,0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Media query for mobile screens */
