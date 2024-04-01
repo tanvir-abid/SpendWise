@@ -478,7 +478,7 @@ function createTable(data) {
       // Create a row with a message if data is empty
       const noDataMessage = document.createElement('tr');
       const noDataCell = document.createElement('td');
-      noDataCell.setAttribute('colspan', headers.length.toString()); // Set colspan to span all columns
+      noDataCell.setAttribute('colspan', '2'); // Set colspan to span all columns
       noDataCell.textContent = 'No data available';
       noDataMessage.appendChild(noDataCell);
       tableBody.appendChild(noDataMessage);
