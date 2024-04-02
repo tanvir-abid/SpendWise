@@ -295,7 +295,7 @@ async function createPrimaryElements(userID,userEmail) {
             });
           }else if(item.name == "To Do"){
             let taskManager = [];
-            const querySnapshot = await getDocs(collection(db, "user",'TLkrmIrbCWTyx81CN1fjZym4IkJ3','Tasks'));
+            const querySnapshot = await getDocs(collection(db, "user",userID,'Tasks'));
             querySnapshot.forEach((doc) => {
               let data = doc.data();
               data.id = doc.id;
