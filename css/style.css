@@ -958,6 +958,7 @@ section.toDo-container {
 
 .action-tasks-container{
   flex: 2;
+  width: 100%;
 }
 
 .upcoming-task-container{
