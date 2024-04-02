@@ -232,6 +232,7 @@ async function createPrimaryElements(userID,userEmail) {
     { name: 'Home', icon: '<i class="fa fa-home" aria-hidden="true"></i>' },
     { name: 'Wallet', icon: '<i class="fa fa-google-wallet" aria-hidden="true"></i>' },
     { name: 'Update', icon: '<i class="fa fa-pencil-square-o" aria-hidden="true"></i>' },
+    { name: 'To Do', icon: '<i class="fa fa-list-ul" aria-hidden="true"></i>' },
     { name: 'SignOut', icon: '<i class="fa fa-sign-out" aria-hidden="true"></i>' }
   ];
   
@@ -292,10 +293,21 @@ async function createPrimaryElements(userID,userEmail) {
             }).catch((error) => {
               
             });
+          }else if(item.name == "To Do"){
+            let taskManager = [];
+            const querySnapshot = await getDocs(collection(db, "user",'TLkrmIrbCWTyx81CN1fjZym4IkJ3','Tasks'));
+            querySnapshot.forEach((doc) => {
+              let data = doc.data();
+              data.id = doc.id;
+              taskManager.push(data);
+            });
+            const toDoSection = createToDoSection(userID,taskManager);
+            mainContainer.innerHTML = "";
+            mainContainer.appendChild(toDoSection);
           }
       });
       navList.appendChild(liElement);
-      if (index === 0) {
+      if (index === 3) {
         liElement.click();
     }
   });
@@ -636,18 +648,18 @@ function createHomeSection(monthData,email) {
   expenseContainer.appendChild(expenseTable);
 
   // Create cash-out-container div
-const cashOutContainer = document.createElement('div');
-cashOutContainer.className = 'cash-out-container table-container';
+  const cashOutContainer = document.createElement('div');
+  cashOutContainer.className = 'cash-out-container table-container';
 
-// Create h2 tag for cash out
-const cashOutTitle = document.createElement('h2');
-cashOutTitle.textContent = `Withdrawal of ${currentMonth}`;
+  // Create h2 tag for cash out
+  const cashOutTitle = document.createElement('h2');
+  cashOutTitle.textContent = `Withdrawal of ${currentMonth}`;
 
-// Create table for cash out data
-const cashOutTable = createTable(monthData.cashOut);
+  // Create table for cash out data
+  const cashOutTable = createTable(monthData.cashOut);
 
-cashOutContainer.appendChild(cashOutTitle);
-cashOutContainer.appendChild(cashOutTable);
+  cashOutContainer.appendChild(cashOutTitle);
+  cashOutContainer.appendChild(cashOutTable);
 
 
   // Append income-container and expense-container to total-income-expense-container
@@ -1373,6 +1385,444 @@ function generateFormElement(inputDetails) {
 
   return formElement;
 }
+//===========================================//
+function noTaskMessage(){
+  // Create container element
+  const noTaskContainer = document.createElement('div');
+  noTaskContainer.classList.add('no-task-container');
+  const noTaskTitle = document.createElement('h2');
+  noTaskTitle.textContent = 'No Task Available';
+  // Append h2 element to container
+  noTaskContainer.appendChild(noTaskTitle);
+
+  return noTaskContainer
+}
+
+function createToDoSection(userID,taskManager){
+  console.log("all data",taskManager);
+  // Create section element for Update
+  const toDoSection = document.createElement('section');
+  toDoSection.classList.add('toDo-container');
+
+  const sectionTitle = 'To Do';
+  const sectionIcon = '<i class="fa fa-check-square-o" aria-hidden="true"></i>';
+  const subtitle = 'Assign task to do';
+  const sectionHeader = createSectionHeader(sectionTitle, sectionIcon, subtitle);
+  toDoSection.appendChild(sectionHeader);
+
+  // Create tasks content container
+  const tasksContent = document.createElement('div');
+  tasksContent.classList.add('tasks-content');
+  // Create action tasks container
+  const actionTasksContainer = document.createElement('div');
+  actionTasksContainer.classList.add('action-tasks-container');
+
+  // Create div for today's tasks
+  const todaysTaskContainer = document.createElement('div');
+  todaysTaskContainer.classList.add('todaysTask-container');
+  const todaysTaskTitle = document.createElement('h2');
+  todaysTaskTitle.textContent = "Today's Tasks";
+  todaysTaskContainer.appendChild(todaysTaskTitle);
+  // Create tasks container for today's tasks
+  const todaysTasksContainer = document.createElement('div');
+  todaysTasksContainer.classList.add('tasks-container');
+  // Generate task card for today's tasks
+  const currentDate = new Date().toLocaleDateString('en-US');
+  console.log(currentDate);
+  // Filter tasks matching the current date excluding 'Completed' tasks
+  const tasksForToday = taskManager.filter(task => {
+    const taskDueDate = new Date(task.date).toLocaleDateString('en-US');
+    return taskDueDate === currentDate && task.set_status !== 'Completed';
+  });
+  console.log("today task",tasksForToday);
+  // Iterate over filtered tasks and generate task cards
+  if(tasksForToday.length === 0){
+    todaysTasksContainer.appendChild(noTaskMessage());
+  }else{
+    tasksForToday.forEach(task => {
+      let taskCard = generateTaskCard(userID,task);
+      todaysTasksContainer.appendChild(taskCard);
+    });
+  }
+  // Append today's tasks container to today's task container
+  todaysTaskContainer.appendChild(todaysTasksContainer);
+
+  // Create div for previous tasks
+  const previousTasksContainer = document.createElement('div');
+  previousTasksContainer.classList.add('previous-tasks-container');
+  const previousTaskTitle = document.createElement('h2');
+  previousTaskTitle.textContent = "Previous Tasks";
+  previousTasksContainer.appendChild(previousTaskTitle);
+
+  // Filter tasks that are before the current date (without considering time)
+  const previousTasks = taskManager.filter(task => {
+    // Get the due date without time
+    const taskDueDate = new Date(task.date);
+    const currentDate = new Date();
+    const taskDueDateWithoutTime = new Date(taskDueDate.getFullYear(), taskDueDate.getMonth(), taskDueDate.getDate());
+    const currentDateWithoutTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+    // Include tasks with status "Completed" or due date before the current date
+    return task.set_status === 'Completed' || taskDueDateWithoutTime < currentDateWithoutTime;
+  });
+  console.log("previous",previousTasks);
+  // Create tasks container for previous tasks
+  const previousTasksContent = document.createElement('div');
+  previousTasksContent.classList.add('tasks-container');
+  // Iterate over filtered previous tasks and generate task cards
+  if (previousTasks.length === 0) {
+    // If there are no previous tasks, append the noTaskContainer
+      previousTasksContent.appendChild(noTaskMessage());
+  }else{
+    previousTasks.forEach(task => {
+      let taskCard = generateTaskCard(userID,task);
+      previousTasksContent.appendChild(taskCard);
+    });
+  }
+  // Append previous tasks content to previous tasks container
+  previousTasksContainer.appendChild(previousTasksContent);
+
+  // Append today's task container to tasks content container
+  actionTasksContainer.appendChild(todaysTaskContainer);
+  actionTasksContainer.appendChild(previousTasksContainer);
+  tasksContent.appendChild(actionTasksContainer);
+  //-------------------------------------------------//
+  // Create div for upcoming tasks
+  const upcomingTaskContainer = document.createElement('div');
+  upcomingTaskContainer.classList.add('upcoming-task-container');
+  const upcomingTaskTitle = document.createElement('h2');
+  upcomingTaskTitle.textContent = "Upcoming Tasks";
+  upcomingTaskContainer.appendChild(upcomingTaskTitle);
+
+    // Create tasks container for today's tasks
+  const upcomingContainer = document.createElement('div');
+  upcomingContainer.classList.add('tasks-container');
+
+  // Generate task card for today's tasks
+  // Filter tasks for upcoming tasks (excluding tasks with status 'Completed')
+  const upcomingTasks = taskManager.filter(task => {
+  // Get the due date without time
+  const taskDueDate = new Date(task.date);
+  const currentDate = new Date();
+  const taskDueDateWithoutTime = new Date(taskDueDate.getFullYear(), taskDueDate.getMonth(), taskDueDate.getDate());
+  const currentDateWithoutTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+  // Exclude tasks with status 'Completed' and filter out tasks after today's date
+  return task.set_status !== 'Completed' && taskDueDateWithoutTime > currentDateWithoutTime;
+  });
+
+
+
+  // Iterate over filtered upcoming tasks and generate task cards
+  if(upcomingTasks.length === 0){
+    upcomingContainer.appendChild(noTaskMessage());
+  }else{
+    upcomingTasks.forEach(task => {
+      let taskCard = generateTaskCard(userID,task);
+      upcomingContainer.appendChild(taskCard);
+    });
+  }
+
+
+  // Append today's tasks container to today's task container
+  upcomingTaskContainer.appendChild(upcomingContainer);
+
+  // Append upcoming task container to tasks content container
+  tasksContent.appendChild(upcomingTaskContainer);
+
+  // Append tasks content container to the toDoSection
+  toDoSection.appendChild(tasksContent);
+  //----------------------------------//
+  // Create new task container
+  const newTaskContainer = document.createElement('div');
+  newTaskContainer.classList.add('new-task-container');
+
+  // Create span element with plus icon
+  const plusIconSpan = document.createElement('span');
+  plusIconSpan.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i>';
+
+  // Append plus icon span to new task container
+  newTaskContainer.appendChild(plusIconSpan);
+  // Attach click event listener to the newTaskContainer
+  newTaskContainer.addEventListener('click', () => {
+    openTaskModal(userID)
+  });
+
+  // Append new task container to the toDoSection
+  toDoSection.appendChild(newTaskContainer);
+
+  return toDoSection;
+}
+
+function generateTaskCard(user,task) {
+  // Create task card container
+  const taskCard = document.createElement('div');
+  taskCard.classList.add('task-card');
+
+  // Create task card header
+  const header = document.createElement('div');
+  header.classList.add('header');
+
+  // Create header title containing title and formatted date
+  const headerTitle = document.createElement('div');
+  headerTitle.classList.add('header-title');
+  const formattedDate = new Date(task.date).toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true, month: 'long', day: 'numeric', year: 'numeric' });
+  headerTitle.innerHTML = `<h3>${task.name}</h3><p>${formattedDate}</p>`;
+
+  // Create close button
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
+  closeButton.classList.add('close-btn');
+  closeButton.addEventListener('click',async () => {
+    await deleteDoc(doc(db, "user", user, 'Tasks',task.id));  
+    taskCard.remove(); 
+    createModal('Deleted','Task has been deleted successfully.');
+  });
+
+  // Append header title and close button to header
+  header.appendChild(headerTitle);
+  header.appendChild(closeButton);
+
+  // Create task card body
+  const body = document.createElement('div');
+  body.classList.add('body');
+  body.innerHTML = `<p>${task.describe}</p>`;
+
+  // Create task card footer
+  const footer = document.createElement('div');
+  footer.classList.add('footer');
+
+  // Create status container containing status icon and status text
+  const statusContainer = document.createElement('div');
+  statusContainer.classList.add('status-container');
+  const statusIcon = document.createElement('span');
+  statusIcon.innerHTML = '<i class="fa fa-check"></i>'; // You can replace it with the appropriate icon based on status
+  const statusText = document.createElement('p');
+  statusText.textContent = task.set_status;
+  statusContainer.appendChild(statusIcon);
+  statusContainer.appendChild(statusText);
+  if(task.lastUpdate){
+    statusContainer.setAttribute('data-update', `Updated:${formatTimeStamp(task.lastUpdate)}`);
+  }else{
+    statusContainer.setAttribute('data-update', `Not Updated Yet`);
+  }
+
+  // Create button container containing task action button
+  const buttonContainer = document.createElement('div');
+  buttonContainer.classList.add('button-container');
+  const actionButton = document.createElement('button');
+  // Add event listener to the action button
+  actionButton.addEventListener('click', async () => {
+    if (actionButton.innerHTML !== 'Delete') {
+        actionButton.disabled = true;
+        actionButton.innerHTML = '<i class="fa fa-spinner spin"></i>';
+        
+        const currentTimestamp = new Date().toISOString();
+        task.lastUpdate = currentTimestamp;
+        task.set_status = 'Completed';
+        console.log(task);
+
+        try {
+            const updateRef = doc(db, "user", user, 'Tasks', task.id);
+            await updateDoc(updateRef, task);
+            
+            setTimeout(() => {
+                actionButton.innerHTML = 'Delete';
+                actionButton.disabled = false;
+                statusText.textContent = task.set_status;
+
+                const taskCardClone = taskCard.cloneNode(true);
+                taskCard.remove();
+
+                const previousContainer = document.querySelector('.previous-tasks-container .tasks-container');
+                const todayTasksContainer = document.querySelector('.todaysTask-container .tasks-container');
+                const upcomingTasksContainer = document.querySelector('.upcoming-task-container .tasks-container');
+                if (upcomingTasksContainer.children.length === 0) {
+                    upcomingTasksContainer.appendChild(noTaskMessage());
+                }else if(todayTasksContainer.children.length === 0){
+                  todayTasksContainer.appendChild(noTaskMessage());
+                }else if(previousContainer.children.length === 0){
+                  previousContainer.appendChild(noTaskMessage());
+                }
+                // Add event listener to the action button of the cloned task card
+                taskCardClone.querySelector('.button-container button').addEventListener('click', async () => {
+                  try {
+                    const updateRef = doc(db, "user", user, 'Tasks', task.id);
+                    await deleteDoc(updateRef);
+                    createModal('Deleted', 'Task has been deleted successfully.');
+                    taskCardClone.remove();
+                    if(previousContainer.children.length === 0){
+                      previousContainer.appendChild(noTaskMessage())
+                    }
+                  } catch (error) {
+                      console.error("Error writing document: ", error);
+                  }
+                });
+                const noTaskContainer = previousContainer.querySelector('.no-task-container');
+                if (noTaskContainer) {
+                    previousContainer.removeChild(noTaskContainer); // Remove the "no-task-container" element if present
+                }
+                previousContainer.appendChild(taskCardClone);
+            }, 500);
+        } catch (error) {
+            console.error("Error writing document: ", error);
+        }
+    }else{
+      try {
+        const updateRef = doc(db, "user", user, 'Tasks', task.id);
+        await deleteDoc(updateRef);
+        createModal('Deleted', 'Task has been deleted successfully.');
+        taskCard.remove();
+      } catch (error) {
+          console.error("Error writing document: ", error);
+      }
+    }
+  });
+
+
+  // Decide button text based on status
+  switch (task.set_status) {
+    case 'Pending':
+      actionButton.textContent = 'Mark as Completed';
+      break;
+    case 'Completed':
+      actionButton.textContent = 'Delete';
+      break;
+    default:
+      actionButton.textContent = 'Mark as Completed';
+  }
+
+  buttonContainer.appendChild(actionButton);
+
+  // Append status container and button container to footer
+  footer.appendChild(statusContainer);
+  footer.appendChild(buttonContainer);
+
+  // Append header, body, and footer to task card
+  taskCard.appendChild(header);
+  taskCard.appendChild(body);
+  taskCard.appendChild(footer);
+
+  // Return the generated task card
+  return taskCard;
+}
+
+// Function to create and display the modal with the task form
+function openTaskModal(userID) {
+  // Create modal container
+  const modalContainer = document.createElement('div');
+  modalContainer.classList.add('modal-container');
+
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.classList.add('modal-content');
+
+  // Create modal header
+  const modalHeader = document.createElement('div');
+  modalHeader.classList.add('modal-header');
+
+  // Create modal title
+  const modalTitle = document.createElement('h2');
+  modalTitle.textContent = 'New Task';
+  modalTitle.classList.add('modal-title');
+
+  // Create close button
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
+  closeButton.classList.add('close-btn');
+  closeButton.addEventListener('click', () => {
+      modalContainer.remove(); // Remove the modal from the DOM
+  });
+
+  // Append modal title and close button to modal header
+  modalHeader.appendChild(modalTitle);
+  modalHeader.appendChild(closeButton);
+
+  // Create modal body
+  const modalBody = document.createElement('div');
+  modalBody.classList.add('modal-body','task-body');
+
+  // Create form elements
+  const inputDetails = [
+    { type: 'text', label: 'Name' },
+    { type: 'select', label: 'Set Status', options: ['Pending','Completed'] },
+    { type: 'datetime-local', label: 'Date' },
+    { type: 'textarea', label: 'Describe' }
+  ];
+  const newTaskForm = generateForm(inputDetails);
+  modalBody.appendChild(newTaskForm);
+  newTaskForm.addEventListener('submit',async (e) => {
+    e.preventDefault();
+    const newTaskBtn = newTaskForm.querySelector('button[type="submit"]');
+    newTaskBtn.disabled = true;
+    newTaskBtn.innerHTML = '<i class="fa fa-spinner spin"></i>';
+    const formData = new FormData(newTaskForm);
+
+    // Convert FormData object to JSON
+    const formDataJSON = {};
+    let isEmpty = false;
+    formData.forEach((value, key) => {
+        if (!value.trim()) { // Check if the value is empty or contains only whitespace
+            isEmpty = true;
+            createModal("Warning", "Please fill in all fields");
+            newTaskBtn.disabled = false;
+            newTaskBtn.innerHTML = 'Submit';
+            return; // Exit the loop early if any input value is empty
+        }
+        formDataJSON[key] = value;
+    });
+    // Log the form data
+    console.log(formDataJSON);
+    try {
+      const docRef = await addDoc(collection(db, "user",userID,'Tasks'), formDataJSON);
+        console.log("Document successfully written!",docRef.id);
+
+        formDataJSON.id = docRef.id;
+        let newCard = generateTaskCard(userID, formDataJSON);
+        const previousContainer = document.querySelector('.previous-tasks-container .tasks-container');
+        const todayTasksContainer = document.querySelector('.todaysTask-container .tasks-container');
+        const upcomingTasksContainer = document.querySelector('.upcoming-task-container .tasks-container');
+        // Remove any existing no-task-container
+        document.querySelectorAll('.no-task-container').forEach(container => {
+          container.parentNode.removeChild(container);
+        });
+
+        // Get the date from formDataJSON and remove the time component
+        const taskDate = new Date(formDataJSON.date);
+        taskDate.setHours(0, 0, 0, 0);
+
+        // Get the current date and remove the time component
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
+
+        // Check if taskDate is prior to the current date
+        if (taskDate < currentDate) {
+            previousContainer.appendChild(newCard);
+        } else if (taskDate > currentDate) { // Check if taskDate is after the current date
+            upcomingTasksContainer.appendChild(newCard);
+        } else { // Task date is equal to the current date
+            todayTasksContainer.appendChild(newCard);
+        }
+        
+        modalContainer.remove();
+        createModal('Success !!', 'New task added successfully.');
+    } catch (error) {
+        console.error("Error writing document: ", error);
+    }
+
+  })
+
+  // Append modal header and modal body to modal content
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+
+  // Append modal content to modal container
+  modalContainer.appendChild(modalContent);
+
+  // Append modal container to the body
+  document.body.appendChild(modalContainer);
+}
+
 //===========================================//
 function createModal(title, content) {
   // Check if a modal with the same title already exists

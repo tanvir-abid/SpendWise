@@ -900,6 +900,318 @@ button[type="submit"]:hover {
   }
 }
 
+/*=================*/
+section.toDo-container {
+  width: 100%;
+  color: white;
+}
+
+.tasks-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  position: relative;
+  padding: 20px;
+}
+
+.tasks-container .no-task-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 160px;
+}
+
+.todaysTask-container,
+.previous-tasks-container{
+  margin-bottom: 30px;
+}
+/* CSS for scrollbar */
+.task-card .body::-webkit-scrollbar,
+.tasks-container::-webkit-scrollbar {
+    width: 5px; /* Set the width of the scrollbar */
+    background-color: transparent; /* Transparent background */
+}
+
+/* CSS for scrollbar track */
+.task-card .body::-webkit-scrollbar-track,
+.tasks-container::-webkit-scrollbar-track {
+    background-color: transparent; /* Transparent background for scrollbar track */
+}
+
+/* CSS for scrollbar thumb */
+.task-card .body::-webkit-scrollbar-thumb,
+.tasks-container::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white for scrollbar thumb */
+    border-radius: 10px; /* Rounded corners for scrollbar thumb */
+}
+
+/* CSS for scrollbar thumb hover effect */
+.task-card .body::-webkit-scrollbar-thumb:hover,
+.tasks-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5); /* Lighter color on hover */
+}
+
+.action-tasks-container{
+  flex: 2;
+}
+
+.upcoming-task-container{
+  flex: 1;
+  max-width: 400px;
+  max-height: 90vh;
+  border-left: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 0 10px;
+}
+
+.todaysTask-container h2,
+.previous-tasks-container h2,
+.upcoming-task-container h2{
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(20px);
+  width: 100%;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+}
+
+.upcoming-task-container .tasks-container {
+  max-height: 75vh;
+  box-shadow: inset 0 10px 10px -10px rgba(0, 0, 0, 0.1), inset 0 -10px 10px -10px rgba(0, 0, 0, 0.1);
+}
+
+.upcoming-task-container .task-card{
+  width: 100%;
+  max-width: none;
+}
+
+.tasks-container{
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 5px;
+  min-height: 30vh;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+/* CSS for task card */
+.task-card {
+  position: relative;
+  width: 100%; /* Adjust the padding */
+  max-width: 340px;
+  margin: 0px;
+  padding: 20px;
+  background: rgba(0,0,0, 0.15); 
+  border-radius: 20px;
+  backdrop-filter: blur(10px); 
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); 
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+  animation: card 0.3s ease-in;
+}
+
+@keyframes card {
+  from{opacity: 0;}
+  to{opacity: 1;}
+}
+
+/* CSS for task card header */
+.task-card .header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* CSS for header title */
+.task-card .header .header-title h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* CSS for header title date */
+.task-card .header .header-title p {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7); /* Lighter text color */
+}
+
+/* CSS for close button */
+.task-card .header .close-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
+  font-size: 18px;
+}
+
+/* CSS for close button hover effect */
+.task-card .header .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8); /* Lighter color on hover */
+}
+
+/* CSS for task card body */
+.task-card .body{
+  height: 60px;
+  overflow-y: auto;
+}
+.task-card .body p {
+  margin: 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8); /* Lighter text color */
+  text-align: justify;
+}
+
+/* CSS for task card footer */
+.task-card .footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* CSS for status container */
+.task-card .footer .status-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.task-card .footer .status-container::before {
+  content: attr(data-update);
+  position: absolute;
+  left: 0;
+  bottom: 0px;
+  transform: translate(0, 0);
+  font-size: 9px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 5px;
+  width: 150px;
+  border-radius: 5px;
+  z-index: 1;
+  display: none;
+  transition: all 0.3s ease;
+}
+
+.task-card .footer .status-container:hover::before{
+  display: block;
+  transform: translate(0, 25px);
+}
+
+/* CSS for status icon */
+.task-card .footer .status-container span {
+  font-size: 15px;
+  margin-right: 5px;
+}
+
+/* CSS for status text */
+.task-card .footer .status-container p {
+  margin: 0;
+  font-size: 10px;
+}
+
+/* Unique CSS for status container with glassmorphic design */
+.task-card .footer .status-container {
+  background: rgba(255, 255, 255, 0.1); /* Semi-transparent white background */
+  padding: 2px 8px;
+  font-size: 8px;
+  border-radius: 12px;
+  backdrop-filter: blur(5px); /* Apply blur effect */
+}
+
+/* CSS for button container */
+.task-card .footer .button-container button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #E72929; /* Green color for button */
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 50px;
+}
+
+/* CSS for button container hover effect */
+.task-card .footer .button-container button:hover {
+  background-color: #fb3d3d; /* Darker green color on hover */
+}
+
+.new-task-container {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  margin: 20px; /* Adjust margin as needed */
+}
+
+.new-task-container span {
+  display: inline-block;
+  background-color: #E72929; 
+  padding: 10px 12px; 
+  border-radius: 50%; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+  cursor: pointer;
+  color: #fff;
+}
+
+.modal-body.task-body{
+  padding: 0;
+}
+
+.task-body form{
+  width: 100%;
+}
+
+.modal-body form textarea{
+  background-color: transparent;
+  width: 100%;
+  min-height: 100px;
+  border-radius: 10px;
+  color: #fff;
+  padding: 10px;
+}
+
+/* Style the calendar picker indicator */
+.input-group input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1); 
+  border-radius: 50%; 
+  width: 24px; 
+  height: 24px; 
+  margin-left: 5px; 
+  cursor: pointer; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+}
+
+/* Style the calendar picker indicator on hover */
+.input-group input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+/* Style the calendar picker indicator on focus */
+.input-group input[type="datetime-local"]:focus::-webkit-calendar-picker-indicator {
+  outline: none; 
+}
+
+@media screen and (max-width: 768px) {
+  .tasks-content{
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .upcoming-task-container{
+    max-width: none;
+    width: 100%;
+    border-left: none;
+    padding: 0;
+  }
+
+  .tasks-container .task-card{
+    max-width: none;
+  }
+}
+
 /*============================*/
 /* Modal Container */
 .modal-container {
