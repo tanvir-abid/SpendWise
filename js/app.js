@@ -1375,6 +1375,15 @@ function generateFormElement(inputDetails) {
           selectField.appendChild(optionElement);
       });
       formElement.appendChild(selectField);
+  }else if (type === 'datetime-local') {
+    const datetimeField = document.createElement('input');
+    datetimeField.setAttribute('type', 'datetime-local');
+    datetimeField.setAttribute('name', label.toLowerCase().replace(/\s/g, '_'));
+    formElement.appendChild(datetimeField);
+  }else if (type === 'textarea') {
+    const textareaField = document.createElement('textarea');
+    textareaField.setAttribute('name', label.toLowerCase().replace(/\s/g, '_'));
+    formElement.appendChild(textareaField);
   }
 
   if (label) {
@@ -1399,7 +1408,6 @@ function noTaskMessage(){
 }
 
 function createToDoSection(userID,taskManager){
-  console.log("all data",taskManager);
   // Create section element for Update
   const toDoSection = document.createElement('section');
   toDoSection.classList.add('toDo-container');
@@ -1428,13 +1436,13 @@ function createToDoSection(userID,taskManager){
   todaysTasksContainer.classList.add('tasks-container');
   // Generate task card for today's tasks
   const currentDate = new Date().toLocaleDateString('en-US');
-  console.log(currentDate);
+
   // Filter tasks matching the current date excluding 'Completed' tasks
   const tasksForToday = taskManager.filter(task => {
     const taskDueDate = new Date(task.date).toLocaleDateString('en-US');
     return taskDueDate === currentDate && task.set_status !== 'Completed';
   });
-  console.log("today task",tasksForToday);
+
   // Iterate over filtered tasks and generate task cards
   if(tasksForToday.length === 0){
     todaysTasksContainer.appendChild(noTaskMessage());
@@ -1465,7 +1473,7 @@ function createToDoSection(userID,taskManager){
     // Include tasks with status "Completed" or due date before the current date
     return task.set_status === 'Completed' || taskDueDateWithoutTime < currentDateWithoutTime;
   });
-  console.log("previous",previousTasks);
+
   // Create tasks container for previous tasks
   const previousTasksContent = document.createElement('div');
   previousTasksContent.classList.add('tasks-container');
