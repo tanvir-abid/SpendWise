@@ -307,7 +307,7 @@ async function createPrimaryElements(userID,userEmail) {
           }
       });
       navList.appendChild(liElement);
-      if (index === 3) {
+      if (index === 0) {
         liElement.click();
     }
   });
