@@ -19,10 +19,84 @@ const auth = getAuth(app);
 onAuthStateChanged(auth, (user) => {
   if (user) {
     createPrimaryElements(user.uid,user.email);
+
+    displayNotifications(user.uid);
+
   } else {
     createCredentialSection();
   }
 });
+
+
+async function displayNotifications(userID) {
+  // Fetch tasks for the user
+  let taskManager = [];
+  const querySnapshot = await getDocs(collection(db, "user", userID, 'Tasks'));
+  querySnapshot.forEach((doc) => {
+    let data = doc.data();
+    data.id = doc.id;
+    taskManager.push(data);
+  });
+
+  // Get current date
+  const today = new Date();
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+  const currentDate = today.toLocaleDateString('en-US', options); // Format: MM/DD/YYYY
+
+  // Convert date strings to match the currentDate format
+  const tasksForToday = taskManager.filter(task => {
+    // Parse task date string to a JavaScript Date object
+    const taskDate = new Date(task.date);
+    const taskDateString = taskDate.toLocaleDateString('en-US', options);
+    return taskDateString === currentDate && task.set_status !== 'Completed';
+  });
+
+  // Create and append notification container to the body
+  const notificationContainer = document.createElement('div');
+  notificationContainer.id = 'notification-container';
+  document.body.appendChild(notificationContainer);
+
+  // Loop through tasks and display notifications with delay
+  for (let i = 0; i < tasksForToday.length; i++) {
+    const task = tasksForToday[i];
+    const notificationDiv = document.createElement('div');
+    notificationDiv.classList.add('notification', 'display');
+
+    // Create inner divs for icon and content
+    const iconContainer = document.createElement('div');
+    iconContainer.classList.add('notification-icon-container');
+    iconContainer.innerHTML = '<span><i class="fa fa-bell-ringing"></i></span>';
+
+    const contentContainer = document.createElement('div');
+    contentContainer.classList.add('notification-content');
+
+    const h3 = document.createElement('h3');
+    const p = document.createElement('p');
+
+    h3.textContent = task.name;
+    p.innerHTML = `Status:${task.set_status} - Due:${formatTimeStamp(task.date)}`;
+
+    contentContainer.appendChild(h3);
+    contentContainer.appendChild(p);
+
+    notificationDiv.appendChild(iconContainer);
+    notificationDiv.appendChild(contentContainer);
+
+    notificationContainer.appendChild(notificationDiv);
+
+    // Display each notification for 5 seconds
+    await new Promise(resolve => setTimeout(resolve, 4000)); // Wait for 4 seconds
+
+    // Toggle classes after 4 seconds
+    notificationDiv.classList.toggle('display');
+    notificationDiv.classList.toggle('disappear');
+
+    // Wait for another second before removing
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second
+
+    notificationDiv.remove(); // Remove after 5 seconds
+  }
+}
 
 //=====================================//
 function createCredentialSection(){
@@ -294,6 +368,7 @@ async function createPrimaryElements(userID,userEmail) {
               
             });
           }else if(item.name == "To Do"){
+            displayLoadingAnimation();
             let taskManager = [];
             const querySnapshot = await getDocs(collection(db, "user",userID,'Tasks'));
             querySnapshot.forEach((doc) => {
@@ -304,10 +379,11 @@ async function createPrimaryElements(userID,userEmail) {
             const toDoSection = createToDoSection(userID,taskManager);
             mainContainer.innerHTML = "";
             mainContainer.appendChild(toDoSection);
+            removeLoadingAnimation();
           }
       });
       navList.appendChild(liElement);
-      if (index === 0) {
+      if (index === 3) {
         liElement.click();
     }
   });
@@ -1544,7 +1620,7 @@ function createToDoSection(userID,taskManager){
   // Create new task container
   const newTaskContainer = document.createElement('div');
   newTaskContainer.classList.add('new-task-container');
-
+  newTaskContainer.setAttribute('toggle-name','New Task');
   // Create span element with plus icon
   const plusIconSpan = document.createElement('span');
   plusIconSpan.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i>';
