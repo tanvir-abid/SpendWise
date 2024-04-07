@@ -393,25 +393,37 @@ async function createPrimaryElements(userID,userEmail) {
   let isNavOpen = false; // Variable to track the state of navigation
 
   if (window.innerWidth <= 768) {
-      const toggleContainer = document.createElement('div');
-      toggleContainer.className = 'toggle-container';
-      const toggleSpan = document.createElement('i');
-      toggleSpan.className = "fa fa-chevron-right";
+    const toggleContainer = document.createElement('div');
+    toggleContainer.className = 'toggle-container';
+    const toggleSpan = document.createElement('i');
+    toggleSpan.className = "fa fa-chevron-right";
 
-      toggleContainer.appendChild(toggleSpan);
-      navContainer.appendChild(toggleContainer);
-      
-      toggleContainer.addEventListener('click', () => {
-          if (isNavOpen) {
-              navContainer.style.transform = 'translateX(-45px)';
-              toggleSpan.style.transform = 'rotate(0deg)';
-          } else {
-              navContainer.style.transform = 'translateX(0px)';
-              toggleSpan.style.transform = 'rotate(180deg)';
-          }
-          isNavOpen = !isNavOpen; // Toggle the state
-      });
-  }
+    toggleContainer.appendChild(toggleSpan);
+    navContainer.appendChild(toggleContainer);
+
+    // Function to toggle navigation visibility
+    const toggleNavVisibility = () => {
+        if (isNavOpen) {
+            navContainer.style.transform = 'translateX(-45px)';
+            toggleSpan.style.transform = 'rotate(0deg)';
+        } else {
+            navContainer.style.transform = 'translateX(0px)';
+            toggleSpan.style.transform = 'rotate(180deg)';
+        }
+        isNavOpen = !isNavOpen; // Toggle the state
+    };
+
+    toggleContainer.addEventListener('click', toggleNavVisibility);
+
+    // Add event listener to main container
+    const mainContainer = document.getElementById('main-container');
+    mainContainer.addEventListener('click', () => {
+        if (isNavOpen) {
+            toggleNavVisibility(); // Hide navContainer if it's open
+        }
+    });
+}
+
 };
 //==========================================//
 function createSectionHeader(sectionTitle,icon, subtitle) {
