@@ -108,7 +108,7 @@ function createCredentialSection(){
   credentialHeader.classList.add('credential-header');
   // Create logo image element
   const logoImg = document.createElement('img');
-  logoImg.src = 'img/spendwise.png';
+  logoImg.src = 'img/spend.png';
   logoImg.alt = 'SpendWise';
   // Create div for site title and slogan
   const siteTitleSlogan = document.createElement('div');
@@ -487,7 +487,7 @@ async function createPrimaryElements(userID,userEmail) {
           const deltaX = touchCurrentX - touchStartX; // Calculate X distance
 
           // If swiping from left to right (positive deltaX), reveal navContainer
-          if (deltaX > 50) {
+          if (deltaX > 40) {
               toggleNavVisibility();
               touchStartX = null; // Reset touch start position
           }
