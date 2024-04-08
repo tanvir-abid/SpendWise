@@ -451,6 +451,7 @@ async function createPrimaryElements(userID,userEmail) {
     toggleContainer.appendChild(toggleSpan);
     navContainer.appendChild(toggleContainer);
 
+    let touchStartX = null;
     // Function to toggle navigation visibility
     const toggleNavVisibility = () => {
         if (isNavOpen) {
@@ -472,7 +473,31 @@ async function createPrimaryElements(userID,userEmail) {
             toggleNavVisibility(); // Hide navContainer if it's open
         }
     });
-}
+
+
+    mainContainer.addEventListener('touchstart', (e) => {
+      if (!isNavOpen){
+        touchStartX = e.touches[0].clientX;
+      } 
+    });
+
+    mainContainer.addEventListener('touchmove', (e) => {
+      if (touchStartX && !isNavOpen) {
+          const touchCurrentX = e.touches[0].clientX; // Current touch X position
+          const deltaX = touchCurrentX - touchStartX; // Calculate X distance
+
+          // If swiping from left to right (positive deltaX), reveal navContainer
+          if (deltaX > 50) {
+              toggleNavVisibility();
+              touchStartX = null; // Reset touch start position
+          }
+      }
+    });
+
+    mainContainer.addEventListener('touchend', () => {
+      touchStartX = null; 
+    });
+  }
 
 };
 //==========================================//
