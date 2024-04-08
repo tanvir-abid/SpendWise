@@ -1355,7 +1355,66 @@ section.toDo-container {
     max-width: none;
   }
 }
+/*=================*/
+.setting-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  margin: 20px;
+}
 
+.setting-options div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 10px;
+}
+
+.setting-options h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+.setting-options h3 .hide-show-icon{
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.setting-options button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.setting-options button:hover {
+  background-color: #45a049;
+}
+
+.setting-options button:active {
+  transform: translateY(2px);
+}
+
+.setting-options .account-container button{
+  background-color: #E72929;
+}
+
+.setting-options .account-container button:hover{
+  background-color: #fb3d3d;
+}
 /*============================*/
 /* Modal Container */
 .modal-container {

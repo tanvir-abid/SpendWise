@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { getFirestore,doc,getDoc,getDocs, setDoc,collection, addDoc,updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { getAuth,signOut, sendPasswordResetEmail,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { getAuth,signOut,deleteUser, EmailAuthProvider,reauthenticateWithCredential ,sendPasswordResetEmail,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 // Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBClbHDRPgfhjp7hLSt7Wecci6yUN_5y_U",
@@ -357,6 +357,7 @@ async function createPrimaryElements(userID,userEmail) {
     { name: 'Wallet', icon: '<i class="fa fa-google-wallet" aria-hidden="true"></i>' },
     { name: 'Update', icon: '<i class="fa fa-pencil-square-o" aria-hidden="true"></i>' },
     { name: 'To Do', icon: '<i class="fa fa-list-ul" aria-hidden="true"></i>' },
+    { name: 'Setting', icon: '<i class="fa fa-cog" aria-hidden="true"></i>' },
     { name: 'SignOut', icon: '<i class="fa fa-sign-out" aria-hidden="true"></i>' }
   ];
   
@@ -430,6 +431,10 @@ async function createPrimaryElements(userID,userEmail) {
             mainContainer.innerHTML = "";
             mainContainer.appendChild(toDoSection);
             removeLoadingAnimation();
+          }else if(item.name == "Setting"){
+            const settingSection = createSettingsSection(userID,userEmail);
+            mainContainer.innerHTML = "";
+            mainContainer.appendChild(settingSection);
           }
       });
       navList.appendChild(liElement);
@@ -500,6 +505,198 @@ async function createPrimaryElements(userID,userEmail) {
   }
 
 };
+
+
+function createPermissionModal(title, buttonTxt, message, confirmCallback) {
+  // Create modal container
+  const modalContainer = document.createElement('div');
+  modalContainer.classList.add('modal-container');
+  // Create modal content
+  const modalContent = document.createElement('div');
+  modalContent.classList.add('modal-content');
+  // Create modal header
+  const modalHeader = document.createElement('div');
+  modalHeader.classList.add('modal-header');
+  const headerTitle = document.createElement('h2');
+  headerTitle.textContent = title;
+  modalHeader.appendChild(headerTitle);
+  // Create close button
+  const closeButton = document.createElement('button');
+  closeButton.innerHTML = '<i class="fa fa-times" aria-hidden="true"></i>';
+  closeButton.classList.add('close-btn');
+  closeButton.addEventListener('click', () => {
+      modalContainer.remove(); // Remove the modal from the DOM
+  });
+  modalHeader.appendChild(closeButton)
+  // Create modal body
+  const modalBody = document.createElement('div');
+  modalBody.classList.add('modal-body');
+  const bodyText = document.createElement('p');
+  bodyText.textContent = message;
+  modalBody.appendChild(bodyText);
+
+  // Create confirm button
+  const confirmButton = document.createElement('button');
+  confirmButton.textContent = buttonTxt;
+  confirmButton.addEventListener('click', () => {
+      if (confirmCallback && typeof confirmCallback === 'function') {
+          confirmCallback();
+      }
+      modalContainer.remove(); // Assuming you have a function to close the modal
+  });
+  modalBody.appendChild(confirmButton);
+  // Append elements to modal content
+  modalContent.appendChild(modalHeader);
+  modalContent.appendChild(modalBody);
+  modalContainer.appendChild(modalContent);
+
+  // Append modal container to document body
+  document.body.appendChild(modalContainer);
+}
+
+function hashUserIdToNumber(userId) {
+  // Simple hashing algorithm
+  let hash = 0;
+  for (let i = 0; i < userId.length; i++) {
+      hash = (hash << 5) - hash + userId.charCodeAt(i);
+  }
+  // Ensure the hash is positive
+  hash = Math.abs(hash);
+  // Ensure the hash is within 8 digits
+  return ('00000000' + hash).slice(-8);
+}
+
+function createSettingsSection(userId,userEmail) {
+  // Create main settings container
+  const settingContainer = document.createElement('section');
+  settingContainer.classList.add('setting-container');
+
+  const sectionTitle = 'Setting';
+  const sectionIcon = '<i class="fa fa-wrench" aria-hidden="true"></i>';
+  const subtitle = 'Set your preference';
+  const sectionHeader = createSectionHeader(sectionTitle, sectionIcon, subtitle);
+  settingContainer.appendChild(sectionHeader);
+
+  const settingOptions = document.createElement('div');
+  settingOptions.classList.add('setting-options');
+  // Create user ID container
+  const userIdContainer = document.createElement('div');
+  userIdContainer.classList.add('userid-container');
+  const userIdHeading = document.createElement('h3');
+  userIdHeading.textContent = 'User ID:';
+  const userIdValue = document.createElement('h3');
+  const hideShowIconSpan = document.createElement('span');
+  hideShowIconSpan.classList.add('hide-show-icon');
+  hideShowIconSpan.innerHTML = '<i class="fa fa-eye"></i>'; 
+  // Creating the id-value span
+  const idValueSpan = document.createElement('span');
+  idValueSpan.classList.add('id-value');
+  idValueSpan.textContent = '********';
+  hideShowIconSpan.addEventListener('click', () => {
+    const isHidden = idValueSpan.textContent === '********';
+    idValueSpan.textContent = isHidden ? hashUserIdToNumber(userId) : '********';
+    hideShowIconSpan.innerHTML = isHidden ? '<i class="fa fa-eye-slash"></i>': '<i class="fa fa-eye"></i>';
+  });
+  // Appending spans to userIdValue
+  userIdValue.appendChild(hideShowIconSpan);
+  userIdValue.appendChild(idValueSpan);
+  userIdContainer.appendChild(userIdHeading);
+  userIdContainer.appendChild(userIdValue);
+  
+
+  // Create email container
+  const emailContainer = document.createElement('div');
+  emailContainer.classList.add('email-container');
+  const emailHeading = document.createElement('h3');
+  emailHeading.textContent = 'Email:';
+  const emailValue = document.createElement('h3');
+  emailValue.textContent = userEmail; 
+  emailValue.style.textTransform = 'Capitalize';
+  emailContainer.appendChild(emailHeading);
+  emailContainer.appendChild(emailValue);
+
+  // Create password container
+  const passwordContainer = document.createElement('div');
+  passwordContainer.classList.add('password-container');
+  const passwordHeading = document.createElement('h3');
+  passwordHeading.textContent = 'Password:';
+  const changePasswordBtn = document.createElement('button');
+  changePasswordBtn.textContent = 'Change Password';
+  passwordContainer.appendChild(passwordHeading);
+  passwordContainer.appendChild(changePasswordBtn);
+  changePasswordBtn.addEventListener('click', () => {
+    createPermissionModal('Permission Required', 'Confirm',`An email has been sent to ${userEmail}. Do you want to proceed?`, () => {
+      sendPasswordResetEmail(auth, userEmail)
+        .then(() => {
+          // Password reset email sent!
+          let msg = `<strong>A password reset email has been sent to your email address.</strong><br><ul><li>Check your email inbox.</li><li>If you don't see the email, check your spam/junk folder.</li><li>Make sure you have entered the correct email address.</li><li>If you have not received email yet, you may have registered with an invalid email address.</li></ul>`
+          createModal('Success !!', msg);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          createModal('Warning', 'There might be some technical issue. Please, try again.')
+        });
+    });
+  })
+
+  // Create account container
+  const accountContainer = document.createElement('div');
+  accountContainer.classList.add('account-container');
+  const accountHeading = document.createElement('h3');
+  accountHeading.textContent = 'Account:';
+  const deleteAccountBtn = document.createElement('button');
+  deleteAccountBtn.textContent = 'Delete Account';
+  accountContainer.appendChild(accountHeading);
+  accountContainer.appendChild(deleteAccountBtn);
+  deleteAccountBtn.addEventListener('click', () => {
+    createPermissionModal('Delete Account', 'Delete', `Are you sure you want to delete your account?`, () => {
+      const user = auth.currentUser;
+      function promptForCredentials() {
+        const email = prompt('Please enter your email address:');
+        const password = prompt('Please enter your password:');
+      
+        if (!email || !password) {
+          throw new Error('Email and password are required.');
+        }
+      
+        return EmailAuthProvider.credential(email, password);
+      }
+  
+      const credential = promptForCredentials();
+      // Reauthenticate the user
+      reauthenticateWithCredential(user, credential)
+        .then(() => {
+          deleteUser(user)
+            .then(() => {
+              createPermissionModal('Thank You','Close' ,`Your account has been successfully deleted. We're sorry to see you go. If you ever decide to come back, we'll be here for you!`, () => {
+                  createCredentialSection();
+              });
+            })
+            .catch((error) => {
+              console.log(error);
+              createModal('Warning','There might be some technical issue. Please, try again.')
+            });
+          
+        })
+        .catch((error) => {
+          console.log(error);
+          // Handle errors like invalid credentials
+        });
+    });
+
+  });
+  
+  // Append containers to the main settings container
+  settingOptions.appendChild(userIdContainer);
+  settingOptions.appendChild(emailContainer);
+  settingOptions.appendChild(passwordContainer);
+  settingOptions.appendChild(accountContainer);
+  settingContainer.appendChild(settingOptions);
+
+  return settingContainer;
+}
+
 //==========================================//
 function createSectionHeader(sectionTitle,icon, subtitle) {
     // Create section-header div
