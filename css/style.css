@@ -47,10 +47,73 @@ main {
   backdrop-filter: blur(10px);
   border-radius: 15px;
   padding: 20px;
-  width: 500px;
+  width: 700px;
   box-shadow: 0 8px 32px 0 rgba(0,0,0, 0.37);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.credential-header {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+  padding: 0px;
+  /* border: 1px solid white; */
+  width: 250px;
+  margin: 0 auto;
+  margin-bottom: 10px;
+}
+
+.credential-header img {
+  width: 150px; 
+  height: auto;
+  border-radius: 50%;
+}
+
+.site-title-slogan {
+  display: flex;
+  flex-direction: column;
+}
+
+.site-title-slogan h1 {
+  font-size: 44px; 
+  color: rgba(255, 255, 255); /* Adjust text color */
+  margin: 0;
+}
+
+.site-title-slogan p {
+  font-size: 14px; 
+  color: rgba(255, 255, 255, 0.7); /* Adjust text color */
+  margin: 0;
+  text-align: center;
+}
+
+@media screen and (max-width: 768px) {
+  .credential-container {
+    flex-direction: column;
+  }
+
+  .credential-header {
+    flex-direction: row;
+    width: 80%;
+  }
+
+  .credential-header img {
+    width: 70px;
+  }
+
+  .site-title-slogan h1 {
+    font-size: 35px;
+  }
+}
+
+.tab-container{
+  flex: 1;
+  width: 100%;
 }
 
 .tabs {

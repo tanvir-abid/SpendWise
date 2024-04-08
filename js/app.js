@@ -27,7 +27,6 @@ onAuthStateChanged(auth, (user) => {
   }
 });
 
-
 async function displayNotifications(userID) {
   // Fetch tasks for the user
   let taskManager = [];
@@ -103,6 +102,31 @@ function createCredentialSection(){
   // Create main container section
   const credentialContainer = document.createElement('section');
   credentialContainer.classList.add('credential-container');
+
+  // Create credential header container
+  const credentialHeader = document.createElement('div');
+  credentialHeader.classList.add('credential-header');
+  // Create logo image element
+  const logoImg = document.createElement('img');
+  logoImg.src = 'img/spendwise.png';
+  logoImg.alt = 'SpendWise';
+  // Create div for site title and slogan
+  const siteTitleSlogan = document.createElement('div');
+  siteTitleSlogan.classList.add('site-title-slogan');
+  const heading = document.createElement('h1');
+  heading.textContent = 'SpendWise';
+  const slogan = document.createElement('p');
+  slogan.textContent = 'Manage Your Finances Wisely';
+
+  siteTitleSlogan.appendChild(heading);
+  siteTitleSlogan.appendChild(slogan);
+  credentialHeader.appendChild(logoImg);
+  credentialHeader.appendChild(siteTitleSlogan);
+  credentialContainer.appendChild(credentialHeader);
+
+  //-----------------------------------------------//
+  const credentialTabContainer = document.createElement('div');
+  credentialTabContainer.classList.add('tab-container');
 
   // Create tabs container
   const tabsContainer = document.createElement('div');
@@ -254,10 +278,10 @@ function createCredentialSection(){
   })
 
   // Append tabs and forms to the credential container
-  credentialContainer.appendChild(tabsContainer);
-  credentialContainer.appendChild(loginFormContainer);
-  credentialContainer.appendChild(registerFormContainer);
-
+  credentialTabContainer.appendChild(tabsContainer);
+  credentialTabContainer.appendChild(loginFormContainer);
+  credentialTabContainer.appendChild(registerFormContainer);
+  credentialContainer.appendChild(credentialTabContainer)
   // Append the credential container section to the main tag
   let mainTag = document.querySelector('main');
   mainTag.innerHTML = "";
