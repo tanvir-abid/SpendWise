@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
 import { getFirestore,doc,getDoc,getDocs, setDoc,collection, addDoc,updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-import { getAuth,signOut ,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
+import { getAuth,signOut, sendPasswordResetEmail,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-auth.js";
 // Your web app's Firebase configuration
 const firebaseConfig = {
     apiKey: "AIzaSyBClbHDRPgfhjp7hLSt7Wecci6yUN_5y_U",
@@ -165,6 +165,13 @@ function createCredentialSection(){
 
   const logInForm = generateForm(inputDetails,"Log In");
   loginFormContainer.appendChild(logInForm);
+  // Create forgot password button
+  const forgotPasswordButton = document.createElement('button');
+  forgotPasswordButton.classList.add('forgotPassBtn');
+  forgotPasswordButton.type = 'button';
+  forgotPasswordButton.textContent = 'Forgot Password ?';
+  // Append forgot password button to the form
+  logInForm.appendChild(forgotPasswordButton);
   logInForm.addEventListener('submit', (e) => {
       e.preventDefault();
       // Get the login button
@@ -203,6 +210,25 @@ function createCredentialSection(){
         loginButton.disabled = false;
         loginButton.innerHTML = 'Log In';
       }
+  });
+
+  forgotPasswordButton.addEventListener('click', () => {
+    const emailInput = logInForm.querySelector('input[name="email"]');
+    const emailValue = emailInput.value.trim();
+    if (emailValue) {
+        sendPasswordResetEmail(auth, emailValue)
+        .then(() => {
+          let msg = `<strong>A password reset email has been sent to your email address.</strong><br><ul><li>Check your email inbox.</li><li>If you don't see the email, check your spam/junk folder.</li><li>Make sure you have entered the correct email address.</li><li>If you have not received email yet, you may have registered with an invalid email address.</li></ul>`
+          createModal('Reset', msg);
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          createModal('Warning !!','There might have any technical issue. Please, try again.');
+        });
+    } else {
+        createModal('Warning !!','Please, enter a valid email address to reset your password.');
+    }
   });
 
   // Create sign up form
