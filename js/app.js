@@ -1502,7 +1502,7 @@ function createUpdateSection(userID) {
       } else if (formName === 'Expense') {
           const inputDetails = [
             {type: 'text',label: 'Name'},
-            {type: 'select',label: 'Category',options: ['Tuition Fees','Books/Supplies','Housing/Rent','Food/Groceries','Transportation','Personal Care','Entertainment/Socializing','Miscellaneous']},
+            {type: 'select',label: 'Category',options: ['Fees','Books/Supplies','Housing/Rent','Food/Groceries','Transportation','Personal Care','Entertainment/Socializing','Miscellaneous']},
             {type: 'number',label: 'Amount',}];
           // Code to generate income form
           const heading = document.createElement('h1');
